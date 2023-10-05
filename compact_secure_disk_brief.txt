@@ -7,3 +7,38 @@ Encryption techniques to consider - Substitution ciperLinks to an external site.
 You could even create your own compression and/or encryption algorithm. Or you could implement multiple algorithms and allow user to pick one.
 
 NOTE: Unlike the assignment, the group project is open ended. You are free to add your own features to the program as you see fit. You will not get a template source file.
+
+Possible functions required:
+
+Create User - SHould generate password and directory for upload.
+
+Upload file
+
+Sign out
+
+Login
+
+Retrieve file
+
+Delete file
+
+delete user
+
+list all files
+
+Optional extended functions
+
+Search files
+
+Search in a Compressed files
+
+edit files???
+
+Manage users - change password, login etc while preserving data
+
+Size of files
+
+
+
+
+
