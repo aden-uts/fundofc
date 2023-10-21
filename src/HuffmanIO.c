@@ -6,10 +6,10 @@
 
 typedef unsigned char byte;
 
-struct huffman_file_t {
+/* struct huffman_file_t {
     struct huffman_header_t;
     struct huffman_table_t;
-};
+}; */
 
 struct huffman_header_t {
     unsigned char signature[4];
@@ -37,9 +37,9 @@ struct huffman_header_t make_header(int symbol_size, int n_symbols) {
     return header;
 }
 
-struct huffman_table_t make_table(unsigned char value, unsigned char prefix[]) {
+/*struct huffman_table_t make_table(unsigned char value, unsigned char prefix[]) {
 
-}
+}*/
 
 void print_header(struct huffman_header_t header) {
     printf("Signature:\t%s\n", header.signature);

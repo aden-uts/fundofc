@@ -25,6 +25,10 @@ struct MinHNode *newNode(char item, unsigned freq) {
   return temp;
 }
 
+struct HuffmanCode {
+    char character;
+    char code[MAX_TREE_HT];
+};
 
 struct MinHeap *createMinH(unsigned capacity) {
   struct MinHeap *minHeap = (struct MinHeap *)malloc(sizeof(struct MinHeap));
@@ -164,6 +168,7 @@ void HuffmanCodes(char item[], int freq[], int size) {
   int arr[MAX_TREE_HT], top = 0;
 
   printHCodes(root, arr, top);
+
 }
 
 
@@ -174,3 +179,4 @@ void printArray(int arr[], int n) {
 
   printf("\n");
 }
+
