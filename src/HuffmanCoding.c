@@ -168,6 +168,7 @@ void HuffmanCodes(char item[], int freq[], int size) {
   int arr[MAX_TREE_HT], top = 0;
 
   printHCodes(root, arr, top);
+  printf("~~~ %d ~~~\n");
 
 }
 
