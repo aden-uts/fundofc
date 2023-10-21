@@ -37,6 +37,17 @@ struct MinHeap *createMinH(unsigned capacity) {
   return minHeap;
 }
 
+struct huffman_code_table_t {
+    unsigned char header[4];
+
+};
+
+struct huffman_code_t {
+    unsigned char value;
+    struct huffman_code_t *next;
+    unsigned char prefix[];
+};
+
 
 void swapMinHNode(struct MinHNode **a, struct MinHNode **b) {
   struct MinHNode *t = *a;
@@ -146,7 +157,6 @@ void printHCodes(struct MinHNode *root, int arr[], int top) {
     printArray(arr, top);
   }
 }
-
 
 void HuffmanCodes(char item[], int freq[], int size) {
   struct MinHNode *root = buildHuffmanTree(item, freq, size);
