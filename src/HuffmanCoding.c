@@ -15,6 +15,12 @@ struct min_heap_t {
   struct min_huffman_node_t **array;
 };
 
+struct huffman_code_t {
+  char item;
+  int len;
+  int code[MAX_TREE_HT];
+};
+
 struct min_huffman_node_t *newNode(char item, unsigned freq) {
   struct min_huffman_node_t *temp = (struct min_huffman_node_t *)malloc(sizeof(struct min_huffman_node_t));
 
@@ -66,7 +72,7 @@ int check_size_one(struct min_heap_t *min_heap_t) {
 }
 
 
-struct min_huffman_node_t *extractMin(struct min_heap_t *min_heap_t) {
+struct min_huffman_node_t *extract_min(struct min_heap_t *min_heap_t) {
   struct min_huffman_node_t *temp = min_heap_t->array[0];
   min_heap_t->array[0] = min_heap_t->array[min_heap_t->size - 1];
 
@@ -117,8 +123,8 @@ struct min_huffman_node_t *buildHuffmanTree(char item[], int freq[], int size) {
   struct min_heap_t *min_heap_t = createAndBuildmin_heap_t(item, freq, size);
 
   while (!check_size_one(min_heap_t)) {
-    left = extractMin(min_heap_t);
-    right = extractMin(min_heap_t);
+    left = extract_min(min_heap_t);
+    right = extract_min(min_heap_t);
 
     top = newNode('$', left->freq + right->freq);
 
@@ -127,7 +133,7 @@ struct min_huffman_node_t *buildHuffmanTree(char item[], int freq[], int size) {
 
     insertmin_heap_t(min_heap_t, top);
   }
-  return extractMin(min_heap_t);
+  return extract_min(min_heap_t);
 }
 
 void print_h_codes(struct min_huffman_node_t *root, int arr[], int top) {
@@ -154,7 +160,60 @@ void huffman_codes(char item[], int freq[], int size) {
   if (root->left) {
     printf("YES\n");
   }
+  
+  int arr2[MAX_TREE_HT], top2 = 0;
+  struct huffman_code_t huffman_codes[size];
+  int i;
+  for (i = 0; i < size; i++) {
+    huffman_codes[i].item = item[i];
+    printf("%c, ", huffman_codes[i].item);
+  }
+  printf("\n");
 
+  get_codes(root, huffman_codes, arr2, top2, size);
+
+
+  printf("~~~~ TEST ~~~~\n");
+  for (i = 0; i < size; i++) {
+    printf("%c ", huffman_codes[i].item);
+    int j;
+    for (j = 0; j < huffman_codes[i].len; j++) {
+      printf("%d", huffman_codes[i].code[j]);
+    }
+    printf("\n");
+  }
+  
+
+}
+
+void get_codes(struct min_huffman_node_t *root, struct huffman_code_t huffman_codes[], int arr[], int top, int n_items) {
+  if (root->left) {
+    arr[top] = 0;
+    get_codes(root->left, huffman_codes, arr, top + 1, n_items);
+  }
+  if (root->right) {
+    arr[top] = 1;
+    get_codes(root->right, huffman_codes, arr, top + 1, n_items);
+  }
+  if (is_leaf(root)) {
+    unsigned char item = root->item;
+    int i; 
+    printf("here, looking for %c \n", item);
+    for (i = 0; i < n_items; i++) {
+      if (huffman_codes[i].item == item) {
+        printf("%c ", huffman_codes[i].item);
+        print_array(arr, top);
+        int j;
+        for (j = 0; j < top; j++) {
+          printf("%d", arr[j]);
+          huffman_codes[i].code[j] = arr[j];
+        }
+        huffman_codes[i].len = top;
+        /* memcpy(huffman_codes[i].code, arr, sizeof(arr)); */
+        /* memcpy(huffman_codes[i][0], *arr, sizeof(arr)); */
+      }
+    }
+  }
 }
 
 
