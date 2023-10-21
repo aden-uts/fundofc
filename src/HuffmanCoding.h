@@ -5,7 +5,7 @@
 #define MAX_SIZE (16 * 1024 * 1024)
 #define MAX_SYMBOLS 1024
 
-void printArray(int arr[], int n);
-void HuffmanCodes(char item[], int freq[], int size);
+void print_array(int arr[], int n);
+void huffman_codes(char item[], int freq[], int size);
 
 #endif

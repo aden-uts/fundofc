@@ -74,12 +74,12 @@ void parse_file(FILE *fp) {
 
 	int i;
 	for (i = 0; i < element_count; i++) {
-		printf("(%X): %d\n", (unsigned char) chars[i], char_counts[i]);
+		printf("(%c): %d\n", (unsigned char) chars[i], char_counts[i]);
 	}
 
     
 
-	HuffmanCodes(chars, char_counts, element_count);
+	huffman_codes(chars, char_counts, element_count);
 
     struct huffman_header_t header = make_header(sizeof(chars[0]), element_count);
     print_header(header);
