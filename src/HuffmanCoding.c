@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "HuffmanCoding.h"
+#include "HuffmanUtils.h"
 
 struct min_huffman_node_t {
   char item;
@@ -13,12 +14,6 @@ struct min_heap_t {
   unsigned size;
   unsigned capacity;
   struct min_huffman_node_t **array;
-};
-
-struct huffman_code_t {
-  char item;
-  int len;
-  int code[MAX_TREE_HT];
 };
 
 struct min_huffman_node_t *newNode(char item, unsigned freq) {
@@ -151,7 +146,7 @@ void print_h_codes(struct min_huffman_node_t *root, int arr[], int top) {
   }
 }
 
-void huffman_codes(char item[], int freq[], int size) {
+void get_huffman_codes(struct huffman_code_t huffman_codes[], char item[], int freq[], int size) {
   struct min_huffman_node_t *root = buildHuffmanTree(item, freq, size);
   
   int arr[MAX_TREE_HT], top = 0;
@@ -162,7 +157,7 @@ void huffman_codes(char item[], int freq[], int size) {
   }
   
   int arr2[MAX_TREE_HT], top2 = 0;
-  struct huffman_code_t huffman_codes[size];
+  /* struct huffman_code_t huffman_codes[size]; */
   int i;
   for (i = 0; i < size; i++) {
     huffman_codes[i].item = item[i];
