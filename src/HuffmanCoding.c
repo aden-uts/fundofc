@@ -173,7 +173,9 @@ void huffman_codes(char item[], int freq[], int size) {
   get_codes(root, huffman_codes, arr2, top2, size);
 
 
+  printf("~~~~~~~~~~~~~~\n");
   printf("~~~~ TEST ~~~~\n");
+  printf("~~~~~~~~~~~~~~\n");
   for (i = 0; i < size; i++) {
     printf("%c ", huffman_codes[i].item);
     int j;
@@ -182,7 +184,22 @@ void huffman_codes(char item[], int freq[], int size) {
     }
     printf("\n");
   }
+  printf("~~~~~~~~~~~~~~\n");
+
+  sort_codes(huffman_codes, size);
   
+  printf("~~~~~~~~~~~~~~~~\n");
+  printf("~~~~ SORTED ~~~~\n");
+  printf("~~~~~~~~~~~~~~~~\n");
+  for (i = 0; i < size; i++) {
+    printf("%c ", huffman_codes[i].item);
+    int j;
+    for (j = 0; j < huffman_codes[i].len; j++) {
+      printf("%d", huffman_codes[i].code[j]);
+    }
+    printf("\n");
+  }
+  printf("~~~~~~~~~~~~~~\n");
 
 }
 
@@ -198,19 +215,33 @@ void get_codes(struct min_huffman_node_t *root, struct huffman_code_t huffman_co
   if (is_leaf(root)) {
     unsigned char item = root->item;
     int i; 
-    printf("here, looking for %c \n", item);
     for (i = 0; i < n_items; i++) {
       if (huffman_codes[i].item == item) {
-        printf("%c ", huffman_codes[i].item);
         print_array(arr, top);
+
         int j;
         for (j = 0; j < top; j++) {
-          printf("%d", arr[j]);
           huffman_codes[i].code[j] = arr[j];
         }
+
         huffman_codes[i].len = top;
-        /* memcpy(huffman_codes[i].code, arr, sizeof(arr)); */
-        /* memcpy(huffman_codes[i][0], *arr, sizeof(arr)); */
+      }
+    }
+  }
+}
+
+void sort_codes(struct huffman_code_t huffman_codes[], int size) {
+  int sorted = 0;
+
+  while (!sorted) {
+    int i;
+    sorted = 1;
+    for (i = 0; i < size - 1; i++) {
+      if (huffman_codes[i].len > huffman_codes[i + 1].len) {
+        struct huffman_code_t temp = huffman_codes[i];
+        huffman_codes[i] = huffman_codes[i + 1];
+        huffman_codes[i + 1] = temp;
+        sorted = 0;
       }
     }
   }
