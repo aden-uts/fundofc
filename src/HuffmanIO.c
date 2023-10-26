@@ -218,16 +218,19 @@ void parse_file(FILE *fp) {
 	FILE * output_compress_file = fopen("outputfile", "w");
 
 	fseek(fp, 0L, SEEK_SET);
+	int found = 0;
+	int cache[CACHE_SIZE];
+	for (i = 0; i < CACHE_SIZE; i++) {
+		cache[i] = 0;
+	}
+	int cache_i = 0;
 	while ((c = fgetc(fp)) != EOF) {
-		int i;
-		int found = 0;
+		
 		char c_i = (char) c;
-		int cache[CACHE_SIZE];
-		for (i = 0; i < CACHE_SIZE; i++) {
-			cache[i] = 0;
-		}
-		int cache_i = 0;
+		printf("starting...\n");
+		int i;
 		for (i = 0; i <= element_count; i++) {
+
 			if (c_i == huffman_codes_test[i].item) {
 				int j;
 				for (j = 0; j < huffman_codes_test[i].len; j++) {
@@ -240,8 +243,7 @@ void parse_file(FILE *fp) {
 						printf("here\n");
 						printf("%d %d\n", cache_i, sizeof(cache));
 						if (output_compress_file != NULL) {
-							fwrite(cache, sizeof(cache) , 1, output_compress_file);
-							fclose(output_compress_file);
+							fwrite(cache, 4 , 1, output_compress_file);
 						}
 						cache[0] = 0;
 						cache_i = 0;
@@ -259,6 +261,8 @@ void parse_file(FILE *fp) {
 		}
 		
 	}
+	
+		fclose(output_compress_file);
 
 }
 
