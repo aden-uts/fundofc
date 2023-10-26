@@ -7,6 +7,10 @@
 
 #define CACHE_SIZE 2
 
+void print_bits(int num);
+void set_bit( int A[],  int k );
+int test_bit(int A[], int k);
+
 typedef unsigned char byte;
 
 /* struct huffman_file_t {
@@ -25,6 +29,7 @@ struct huffman_header_t {
     int symbol_size;
     int n_symbols;
     int table_offset;
+	int data_offset;
 };
 
 struct huffman_key_t {
@@ -41,13 +46,14 @@ struct huffman_table_entry_t {
     unsigned char prefix[];
 };
 
-struct huffman_header_t make_header(int symbol_size, int n_symbols) {
+struct huffman_header_t make_header(int symbol_size, int n_symbols, int table_size) {
     struct huffman_header_t header;
-    unsigned char signature[4] = {'T', 'E', 'S', 'T'};
+    unsigned char signature[4] = {'H', 'U', 'F', 'F'};
     memcpy(header.signature, signature, 4);
     header.symbol_size = symbol_size;
     header.n_symbols = n_symbols;
     header.table_offset = sizeof(header);
+	header.data_offset = sizeof(header) + table_size;
     return header;
 }
 
@@ -60,18 +66,35 @@ void print_header(struct huffman_header_t header) {
     printf("Symbol Size: \t%d bytes\n", header.symbol_size);
     printf("N Symbols: \t%d\n", header.n_symbols);
     printf("Table Offset: \t%d\n", header.table_offset);
+	printf("Data offset: \t%d\n", header.data_offset);
 }
 
 
 void parse_file(FILE *fp) {
-	int c;
+	
+	/* init vars
+		- i for many for loops
+		- c for reading chars from file
+		- element count for number of items needing encoding
+	 */
+
+	int i, c;
 	char chars[MAX_SYMBOLS];
 	int char_counts[MAX_SYMBOLS];
 	int element_count = 0;
+
+
+	/* Reading chars from file */
+
+	/* Loop over all chars in file */
 	while ((c = fgetc(fp)) != EOF) {
-		int i;
+		/* Bool flag to check if already found */
 		int found = 0;
+		/* Cast c to char for safety :) */
 		char c_i = (char) c;
+
+		/* Loop through to see if char has already been seen
+			and increment the count of char occurences if yes */
 		for (i = 0; i <= element_count; i++) {
 			if (c_i == chars[i]) {
 				char_counts[i] += 1;
@@ -79,6 +102,7 @@ void parse_file(FILE *fp) {
 				break;
 			}
 		}
+		/* If char hasn't been found add it to the list */
 		if (found == 0) {
 			chars[element_count] = c_i;
 			char_counts[element_count] = 1;
@@ -86,15 +110,10 @@ void parse_file(FILE *fp) {
 		}
 	}
 
-	int i;
-	for (i = 0; i < element_count; i++) {
-		printf("(%c): %d\n", (unsigned char) chars[i], char_counts[i]);
-	}
-
-
 	struct huffman_code_t huffman_codes[element_count];
-
 	get_huffman_codes(huffman_codes, chars, char_counts, element_count);
+
+	/* ######### THIS SHOULD BE MOVED #########  */
 
 	FILE * output_fp = fopen("output", "w");
 
@@ -103,32 +122,30 @@ void parse_file(FILE *fp) {
 		fclose(output_fp);
 	}
 
-	struct huffman_code_t huffman_codes_test[element_count];
-
-	printf("Testing load...\n");
+	struct huffman_code_t huffman_codes_large[element_count];
+/*
+	printf("Testing load...\n");\*/
 	FILE * input_fp = fopen("output", "r");
 
 	
 	
-	fread(huffman_codes_test, sizeof(struct huffman_code_t), element_count, input_fp);
+	fread(huffman_codes_large, sizeof(struct huffman_code_t), element_count, input_fp);
 	for (i = 0; i < element_count; i++) {
-		printf("%c ", huffman_codes_test[i].item);
+/*		printf("%c ", huffman_codes_large[i].item);\*/
 		int j;
-		for (j = 0; j < huffman_codes_test[i].len; j++) {
-			printf("%d", huffman_codes_test[i].code[j]);
+		for (j = 0; j < huffman_codes_large[i].len; j++) {
+/*			printf("%d", huffman_codes_large[i].code[j]);\*/
 		}
-		printf("\n");
+/*		printf("\n");\*/
 	}
 
 
-    struct huffman_header_t header = make_header(sizeof(chars[0]), element_count);
-    print_header(header);
+/*
+	printf("%d \n", sizeof(struct huffman_code_t));\*/
 
-	printf("%d \n", sizeof(struct huffman_code_t));
-
-	struct huffman_code_compressed_t huffman_test;
-
-	printf("Testing compression...\n");
+	/* struct huffman_code_compressed_t huffman_test;*/
+/*
+	printf("Testing compression...\n");\*/
 	compress_huffman_code(huffman_codes[40]);
 	
 	struct huffman_code_compressed_t huffman_codes_compressed[element_count];
@@ -142,7 +159,7 @@ void parse_file(FILE *fp) {
 	FILE * output_compressed_fp = fopen("outputcompressed", "w");
 
     if (output_compressed_fp != NULL) {
-    	fwrite(huffman_codes, sizeof(struct huffman_code_compressed_t) , element_count, output_compressed_fp);
+    	fwrite(huffman_codes_compressed, sizeof(struct huffman_code_compressed_t) , element_count, output_compressed_fp);
 		fclose(output_compressed_fp);
 	}
 
@@ -150,8 +167,8 @@ void parse_file(FILE *fp) {
 	for (i = 0; i < element_count; i++) {
 		sum += huffman_codes[i].len;
 	}
-	printf("%d\n", sum);
-	printf("%d\n", sum / 8 + 1);
+/*	printf("%d\n", sum);\*/
+/*	printf("%d\n", sum / 8 + 1);\*/
 
 
 	int required_bits = sum / 32 + 1;	
@@ -171,7 +188,7 @@ void parse_file(FILE *fp) {
 		}
 		upto += huffman_codes[i].len;
 	}
-	printf("################\n");
+/*	printf("################\n");\*/
 	for (i = 0; i < required_bits; i++) {
 		print_bits(test_compress[i]);
 	}
@@ -189,33 +206,43 @@ void parse_file(FILE *fp) {
     	fwrite(test_compress, sizeof(test_compress[0]) , required_bits, output_more_compressed_fp); 
 		fclose(output_more_compressed_fp);
 	}
-
-	printf("%d\n", sizeof(short));
-	printf("%d\n", sizeof(struct huffman_code_compressed_t));
-	printf("%d\n", element_count);
-	printf("%d\n", sizeof(struct huffman_key_t));
-	printf("%d\n", sizeof(huffman_keys));
-	printf("%d\n", sizeof(test_compress));
-
-	printf("Testing load...\n");
+/*
+	printf("%d\n", sizeof(short));\*/
+/*	printf("%d\n", sizeof(struct huffman_code_compressed_t));\*/
+/*	printf("%d\n", element_count);\*/
+/*	printf("%d\n", sizeof(struct huffman_key_t));\*/
+/*	printf("%d\n", sizeof(huffman_keys));\*/
+/*	printf("%d\n", sizeof(test_compress));\*/
+/*
+	printf("Testing load...\n");\*/
 
 	FILE * input2_fp = fopen("outputmorecompressed", "r");
 	struct huffman_key_t huffman_keys_load[element_count];
 
 	fread(huffman_keys_load, sizeof(struct huffman_key_t), element_count, input2_fp);
 	for (i = 0; i < element_count; i++) {
-		printf("%c ", huffman_keys_load[i].item);
-		printf("%d ", huffman_keys_load[i].len);
-		printf("\n");
+/*		printf("%c ", huffman_keys_load[i].item);\*/
+/*		printf("%d ", huffman_keys_load[i].len);\*/
+/*		printf("\n");\*/
 	}
 
+
+	/* ######### OUTPUTTING FULL FILE ############ */
+
+	int table_size = sizeof(test_compress[0]) * required_bits;
+	struct huffman_header_t output_header = make_header(1, element_count, table_size);
 	fseek(fp, 0L, SEEK_END);
 	int sz = ftell(fp);
-	printf("%d\n", sz);
+/*	printf("%d\n", sz);\*/
 
-	int codes[sz];
+	int codes[sz];	
 
 	FILE * output_compress_file = fopen("outputfile", "w");
+
+	fwrite(&output_header, sizeof(struct huffman_header_t), 1, output_compress_file);
+	fwrite(huffman_keys, sizeof(struct huffman_key_t), element_count, output_compress_file);
+	fwrite(test_compress, sizeof(test_compress[0]) , required_bits, output_compress_file);
+
 
 	fseek(fp, 0L, SEEK_SET);
 	int found = 0;
@@ -227,33 +254,33 @@ void parse_file(FILE *fp) {
 	while ((c = fgetc(fp)) != EOF) {
 		
 		char c_i = (char) c;
-		printf("starting...\n");
+/*		printf("starting...\n");\*/
 		int i;
 		for (i = 0; i <= element_count; i++) {
 
-			if (c_i == huffman_codes_test[i].item) {
+			if (c_i == huffman_codes_large[i].item) {
 				int j;
-				for (j = 0; j < huffman_codes_test[i].len; j++) {
-					printf("%d", huffman_codes_test[i].code[j]);
+				for (j = 0; j < huffman_codes_large[i].len; j++) {
+/*					printf("%d", huffman_codes_large[i].code[j]);\*/
 				}
-				printf("\n");
-				for (j = 0; j < huffman_codes_test[i].len; j++) {
-					printf("About to test cache size\n");
+/*				printf("\n");\*/
+				for (j = 0; j < huffman_codes_large[i].len; j++) {
+/*					printf("About to test cache size\n");\*/
 					if (cache_i == 32) {
-						printf("here\n");
-						printf("%d %d\n", cache_i, sizeof(cache));
+/*						printf("here\n");\*/
+/*						printf("%d %d\n", cache_i, sizeof(cache));\*/
 						if (output_compress_file != NULL) {
 							fwrite(cache, 4 , 1, output_compress_file);
 						}
 						cache[0] = 0;
 						cache_i = 0;
 					}
-					printf("About to check code\n");
-					if (huffman_codes_test[i].code[j] == 1) {
-						printf("Setting bit %d\n", cache_i);
+/*					printf("About to check code\n");\*/
+					if (huffman_codes_large[i].code[j] == 1) {
+/*						printf("Setting bit %d\n", cache_i);\*/
 						set_bit(cache, cache_i);
 					} else {
-						printf("Skipping bit %d\n", cache_i);
+/*						printf("Skipping bit %d\n", cache_i);\*/
 					}
 					cache_i++;
 				}
@@ -264,6 +291,20 @@ void parse_file(FILE *fp) {
 	
 		fclose(output_compress_file);
 
+
+
+	/* ######### LOADING FULL FILE ############ */
+	struct huffman_header_t* header_input = (struct huffman_header_t *) malloc(sizeof(struct huffman_header_t));
+	FILE * input_compress_file = fopen("outputfile", "r");
+	fread(header_input, sizeof(struct huffman_header_t), 1, input_compress_file);
+	print_header(*header_input);
+	fseek(input_compress_file, header_input->table_offset, SEEK_SET);
+	struct huffman_key_t huffman_keys_input[header_input->n_symbols];
+	fread(huffman_keys_input, sizeof(struct huffman_key_t), header_input->n_symbols, input_compress_file);
+	for (i = 0; i < header_input->n_symbols; i++) {
+		printf("%c\t%d\n", huffman_keys_input[i].item, huffman_keys_input[i].len);
+	}
+	
 }
 
 int compress_huffman_code(struct huffman_code_t huffman_code) {
@@ -271,16 +312,16 @@ int compress_huffman_code(struct huffman_code_t huffman_code) {
 	int i;
 	huffman_compressed->code[0] = 0;
 	for (i = 0; i < huffman_code.len; i++) {
-		printf("%d", huffman_code.code[i]);
+/*		printf("%d", huffman_code.code[i]);\*/
 	}
 	for (i = 0; i < 32; i++) {
 		if (test_bit(huffman_compressed->code, i)) {
-			printf("1");
+/*			printf("1");\*/
 		} else {
-			printf("0");
+/*			printf("0");\*/
 		}
 	}
-	printf("\n");
+/*	printf("\n");\*/
 	for (i = 0; i < huffman_code.len; i++) {
 		if (huffman_code.code[i] == 1) {
 			set_bit(huffman_compressed->code, i);

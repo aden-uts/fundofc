@@ -4,6 +4,7 @@
 #include "HuffmanCoding.h"
 #include "HuffmanUtils.h"
 
+
 struct min_huffman_node_t {
   char item;
   unsigned freq;
@@ -37,6 +38,7 @@ struct min_heap_t *createMinH(unsigned capacity) {
   return min_heap_t;
 }
 
+void get_codes(struct min_huffman_node_t *root, struct huffman_code_t huffman_codes[], int arr[], int top, int n_items);
 void swap_node(struct min_huffman_node_t **a, struct min_huffman_node_t **b) {
   struct min_huffman_node_t *t = *a;
   *a = *b;
@@ -251,4 +253,3 @@ void print_array(int arr[], int n) {
   printf("\n");
 }
 
-# Commit
