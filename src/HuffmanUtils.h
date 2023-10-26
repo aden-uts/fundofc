@@ -4,7 +4,7 @@
 #define MAX_TREE_HT 50
 
 struct huffman_code_t {
-  unsigned char code[MAX_TREE_HT / 4];
+  unsigned char code[MAX_TREE_HT];
   char item;
   short len;
 };
