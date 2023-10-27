@@ -174,7 +174,7 @@ void get_huffman_codes(struct huffman_code_t huffman_codes[], char item[], int f
   printf("~~~~ TEST ~~~~\n");
   printf("~~~~~~~~~~~~~~\n");
   for (i = 0; i < size; i++) {
-    printf("%c ", huffman_codes[i].item);
+    printf("%x ", huffman_codes[i].item);
     int j;
     for (j = 0; j < huffman_codes[i].len; j++) {
       printf("%d", huffman_codes[i].code[j]);
@@ -183,7 +183,7 @@ void get_huffman_codes(struct huffman_code_t huffman_codes[], char item[], int f
   }
   printf("~~~~~~~~~~~~~~\n");
 
-  sort_codes(huffman_codes, size);
+  /* sort_codes(huffman_codes, size); */
   
   printf("~~~~~~~~~~~~~~~~\n");
   printf("~~~~ SORTED ~~~~\n");
