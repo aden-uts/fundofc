@@ -71,26 +71,12 @@ void print_header(struct huffman_header_t header) {
 	printf("Data end: \t%ld\n", header.data_end);
 }
 
+void get_codes_from_input(FILE* fp) {
 
-void parse_input_file(FILE *fp) {
-	
-	/* init vars
-		- i for many for loops
-		- c for reading chars from file
-		- element count for number of items needing encoding
-	 */
-
-	int i;
-	//int c;
-	char chars[MAX_SYMBOLS];
-	int char_counts[MAX_SYMBOLS];
-	int element_count = 0;
+}
 
 
-	/* Reading chars from file */
-
-	/* Loop over all chars in file */
-	// while ((c = fgetc(fp)) != EOF) {
+void get_char_info_from_input (char* char_array, int* char_counts_array, int *element_count, FILE* fp) {
 	fseek(fp, 0, SEEK_SET);
 	char c[1]; 
 	while (fread(c, sizeof(c), 1, fp) == 1) {
@@ -102,25 +88,42 @@ void parse_input_file(FILE *fp) {
 
 		/* Loop through to see if char has already been seen
 			and increment the count of char occurences if yes */
-		for (i = 0; i <= element_count; i++) {
-			if (c_i == chars[i]) {
-				char_counts[i] += 1;
+		int i;
+		for (i = 0; i <= *element_count; i++) {
+			if (c_i == char_array[i]) {
+				char_counts_array[i] += 1;
 				found = 1;
 				break;
 			}
 		}
 		/* If char hasn't been found add it to the list */
 		if (found == 0) {
-			chars[element_count] = c_i;
-			char_counts[element_count] = 1;
-			element_count++;
+			char_array[*element_count] = c_i;
+			char_counts_array[*element_count] = 1;
+			(*element_count)++;
 		}
-	}
+	}	
+}
+
+void compress_input_file(FILE *fp) {
+	
+	/* init vars
+		- i for many for loops
+		- c for reading chars from file
+		- element count for number of items needing encoding
+	 */
+
+	char *chars = malloc(sizeof(char) * MAX_SYMBOLS);
+	int *char_counts = malloc(sizeof(int) * MAX_SYMBOLS);
+	int element_count = 0;
+	get_char_info_from_input(chars, char_counts, &element_count, fp);
+	
 	struct huffman_code_t huffman_codes[element_count];
 	get_huffman_codes(huffman_codes, chars, char_counts, element_count);
 	printf("Element count %d\n", element_count);
 	
 	int required_data_bits = 0;
+	int i;
 	for (i = 0; i < element_count; i++) {
 		required_data_bits += huffman_codes[i].len * char_counts[i];
 	} 
@@ -154,10 +157,6 @@ void parse_input_file(FILE *fp) {
 		}
 		printf("\n");
 	}
-
-	printf("Testing compression...\n");
-	compress_huffman_code(huffman_codes[0]);
-	printf("Compression done...\n");
 	
 	struct huffman_code_compressed_t huffman_codes_compressed[element_count];
 
@@ -230,6 +229,7 @@ void parse_input_file(FILE *fp) {
 	fread(huffman_keys_load, sizeof(struct huffman_key_t), element_count, input2_fp);
 
 	/* ######### OUTPUTTING FULL FILE ############ */
+
 	int table_size = sizeof(test_compress[0]) * required_bits;
 	printf("Required bits %d\n", required_bits);
 	struct huffman_header_t output_header = make_header(1, element_count, table_size, required_data_bits);
@@ -277,10 +277,6 @@ void parse_input_file(FILE *fp) {
 		}
 	}
 	if (output_compress_file != NULL) {
-		printf("Final cache write...\n");
-		for (i = 0; i < CACHE_SIZE; i++) {
-			print_bits(cache[i]);
-		}
 		int success = fwrite(cache, sizeof(int) , CACHE_SIZE, output_compress_file);
 		printf("Success: %d\n", success);
 	}
@@ -321,8 +317,8 @@ void decompress_file(FILE* fp, FILE* fp_out, int verbose) {
 	if (verbose >= VVV) { printf("Min code length: %d\nMax code length: %d\n", min_code_len, max_code_len); }
 	if (verbose >= VV) { printf("Starting data decompression...\n"); }
 
-	printf("Compressed data:\n");
-	print_compressed_data(fp, header->data_offset, header->data_end);
+	// printf("Compressed data:\n");
+	// print_compressed_data(fp, header->data_offset, header->data_end);
 
 	int max_buffer_size = max_code_len / sizeof(int) / 8 + 2;
 	int max_buffer_size_bits = max_buffer_size * sizeof(int) * 8;
@@ -445,8 +441,8 @@ void decompress_file(FILE* fp, FILE* fp_out, int verbose) {
 					}
 					exit(1);
 				}
-				printf("Added: ");
-				print_n_bits(input_buffer, 32, 32, 0);
+				// printf("Added: ");
+				// print_n_bits(input_buffer, 32, 32, 0);
 				input_buffer_offset_bits -= sizeof(input_buffer[0]) * 8;
 				if (unbuffered_bits < (sizeof(input_buffer[0]) * 8)) {
 					current_input_buffer_size_bits += unbuffered_bits;
