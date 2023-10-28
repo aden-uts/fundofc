@@ -143,7 +143,7 @@ void print_h_codes(struct min_huffman_node_t *root, int arr[], int top) {
     print_h_codes(root->right, arr, top + 1);
   }
   if (is_leaf(root)) {
-    printf("  %c\t| ", (unsigned char) root->item);
+    printf("  %X\t| ", (unsigned char) root->item);
     print_array(arr, top);
   }
 }

@@ -3,6 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void parse_file(FILE *fp);
+void parse_input_file(FILE *fp);
 
 #endif
