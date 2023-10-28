@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 		free(buf);
 		return 1;
 	}
-	compress_input_file(f);
+	parse_input_file(f);
 
 	return 1;
 }
