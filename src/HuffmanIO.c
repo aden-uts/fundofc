@@ -4,12 +4,11 @@
 
 #include "HuffmanCoding.h"
 #include "HuffmanUtils.h"
+#include "Globals.h"
 
 #define CACHE_SIZE 2
 #define SIGNATURE_LEN 4
-#define V 1
-#define VV 2
-#define VVV 3
+
 
 struct huffman_code_compressed_t {
 	int code[2];
@@ -75,7 +74,7 @@ void get_codes_from_input(FILE* fp) {
 
 }
 
-void parse_input_file(FILE *fp) {
+void compress_input_file(FILE *fp) {
 	
 	/* init vars
 		- i for many for loops
@@ -294,23 +293,23 @@ void parse_input_file(FILE *fp) {
 	FILE * input_output_file = fopen("outputfile", "rb");
 	FILE * decompressed_file = fopen("decompress", "w");
 
-	decompress_file(input_output_file, decompressed_file, VVV);
+	decompress_file(input_output_file, decompressed_file, __V3);
 }
 
 void decompress_file(FILE* fp, FILE* fp_out, int verbose) {
 	fseek(fp_out, 0, SEEK_SET);
 
-	if (verbose >= VV) { printf("Decompressing file...\n"); }
+	if (verbose >= __V2) { printf("Decompressing file...\n"); }
 
 	struct huffman_header_t* header = (struct huffman_header_t *) malloc(sizeof(struct huffman_header_t));
 	load_header(header, fp, verbose);
 	
 	int compressed_bit_count = header->data_end - header->data_offset;
-	if (verbose >= VV) { printf("%d bytes to decompress (%d bits)\n", bits_to_bytes(compressed_bit_count), compressed_bit_count); }
+	if (verbose >= __V2) { printf("%d bytes to decompress (%d bits)\n", bits_to_bytes(compressed_bit_count), compressed_bit_count); }
 
 	int n_symbols, min_code_len, max_code_len = 0;
 	n_symbols = header->n_symbols;
-	if (verbose >= VVV) { printf("%d symbols found...\n", n_symbols); }
+	if (verbose >= __V3) { printf("%d symbols found...\n", n_symbols); }
 
 	struct huffman_key_t keys[n_symbols];
 	load_keys(keys, fp, header->key_offset, n_symbols, verbose);
@@ -321,8 +320,8 @@ void decompress_file(FILE* fp, FILE* fp_out, int verbose) {
 	min_code_len = keys[0].len;
 	max_code_len = keys[n_symbols - 1].len;
 
-	if (verbose >= VVV) { printf("Min code length: %d\nMax code length: %d\n", min_code_len, max_code_len); }
-	if (verbose >= VV) { printf("Starting data decompression...\n"); }
+	if (verbose >= __V3) { printf("Min code length: %d\nMax code length: %d\n", min_code_len, max_code_len); }
+	if (verbose >= __V2) { printf("Starting data decompression...\n"); }
 
 	printf("Compressed data:\n");
 	print_compressed_data(fp, header->data_offset, header->data_end);
@@ -331,7 +330,7 @@ void decompress_file(FILE* fp, FILE* fp_out, int verbose) {
 	int max_buffer_size_bits = max_buffer_size * sizeof(int) * 8;
 	if (bits_to_bytes(compressed_bit_count)  < max_buffer_size) { max_buffer_size = bits_to_bytes(compressed_bit_count); }
 
-	if (verbose >= VVV) { printf("Setting buffer size to %d bits\n", max_buffer_size_bits); }
+	if (verbose >= __V3) { printf("Setting buffer size to %d bits\n", max_buffer_size_bits); }
 	
 	/* Setup input buffer */
 	int input_buffer[max_buffer_size];
@@ -342,7 +341,7 @@ void decompress_file(FILE* fp, FILE* fp_out, int verbose) {
 		current_input_buffer_size_bits = compressed_bit_count;
 	}
 
-	if (verbose >= VVV) {
+	if (verbose >= __V3) {
 		printf("Loading to buffer...\n");
 	}
 
@@ -437,10 +436,10 @@ void decompress_file(FILE* fp, FILE* fp_out, int verbose) {
 				// printf("Load count: %d\n", load_success);
 				if (load_success != 1) {
 					printf("Failed to load file to buffer, exiting\n");
-					if (verbose >= VV) {
+					if (verbose >= __V2) {
 						printf("fread returned %d\n", load_success);
 					}
-					if (verbose >= VVV) {
+					if (verbose >= __V3) {
 						printf("Buffer: ");
 						print_n_bits(input_buffer, sizeof(input_buffer[0]) * max_buffer_size * 8, 0 ,0);
 						printf("Next byte: %d\n", input_byte_upto);
@@ -471,7 +470,7 @@ void decompress_file(FILE* fp, FILE* fp_out, int verbose) {
 
 void get_key_offsets(int offsets[], struct huffman_key_t keys[], int n_elements, int verbose) {
 	
-	if (verbose >= VV) { printf("Calcuating offsets...\n"); }
+	if (verbose >= __V2) { printf("Calcuating offsets...\n"); }
 
 	int i;
 	int offset = 0;
@@ -480,8 +479,8 @@ void get_key_offsets(int offsets[], struct huffman_key_t keys[], int n_elements,
 		offset += keys[i].len;
 	}
 
-	if (verbose >= VV) { printf("Success\n"); }
-	if (verbose >= VVV) { 
+	if (verbose >= __V2) { printf("Success\n"); }
+	if (verbose >= __V3) { 
 		int i;
 		for (i = 0; i < n_elements; i++) {
 			printf("%X\t%d\n", keys[i].item, offsets[i]);
@@ -509,17 +508,17 @@ void print_keys(struct huffman_key_t keys[], int n) {
 }
 
 void load_keys(struct huffman_key_t keys[], FILE* fp, int offset, int n_symbols, int verbose) {
-	if (verbose >= VV) { printf("Loading keys...\n"); }
+	if (verbose >= __V2) { printf("Loading keys...\n"); }
 	fseek(fp, offset, SEEK_SET);
 	int n = fread(keys, sizeof(struct huffman_key_t), n_symbols, fp);
 	if (n != n_symbols) {
 		printf("Invalid keys, exiting.\n");
 		exit(1);
-	} else if (verbose >= VV) {
+	} else if (verbose >= __V2) {
 		printf("Loaded keys...\n");
 	}
 
-	if (verbose >= VVV) { print_keys(keys, n_symbols); }
+	if (verbose >= __V3) { print_keys(keys, n_symbols); }
 
 }
 
@@ -527,7 +526,7 @@ void load_header(struct huffman_header_t* header_p, FILE* fp, int verbose) {
 
 	unsigned char valid_signature[4] = {'H', 'U', 'F', 'F'};
 
-	if (verbose >= VVV)  { printf("Loading header...\n"); }
+	if (verbose >= __V3)  { printf("Loading header...\n"); }
 
 	fseek(fp, 0, SEEK_SET);
 	unsigned char signature [4];
@@ -541,8 +540,8 @@ void load_header(struct huffman_header_t* header_p, FILE* fp, int verbose) {
 	fseek(fp, 0, SEEK_SET);
 	fread(header_p, sizeof(struct huffman_header_t), 1, fp);
 
-	if (verbose >= VV) { printf("Loaded header...\n"); }
-	if (verbose >= VVV) { print_header(*header_p); }
+	if (verbose >= __V2) { printf("Loaded header...\n"); }
+	if (verbose >= __V3) { print_header(*header_p); }
 }
 
 int compare_n_bits(int a[], int b[], int len, int offset_a, int offset_b) {
