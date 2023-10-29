@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 	if (verbose_lvl >= __V4) { printf("Success.\n"); }
 
 	if (cli_args.compress_flag == 1) { 
-		compress_input_file(input_fp, cli_args.output_file_name);
+		compress_input_file(input_fp, cli_args.output_file_name, verbose_lvl);
 	} else if (cli_args.decompress_flag == 1) {
 		decompress_file(input_fp, cli_args.output_file_name, verbose_lvl);
 	}

@@ -39,12 +39,12 @@ struct min_heap_t *createMinH(unsigned capacity) {
 }
 
 void get_codes(struct min_huffman_node_t *root, struct huffman_code_t huffman_codes[], int arr[], int top, int n_items);
+
 void swap_node(struct min_huffman_node_t **a, struct min_huffman_node_t **b) {
   struct min_huffman_node_t *t = *a;
   *a = *b;
   *b = t;
 }
-
 
 void min_heapify(struct min_heap_t *min_heap_t, int idx) {
   int smallest = idx;
@@ -68,7 +68,6 @@ int check_size_one(struct min_heap_t *min_heap_t) {
   return (min_heap_t->size == 1);
 }
 
-
 struct min_huffman_node_t *extract_min(struct min_heap_t *min_heap_t) {
   struct min_huffman_node_t *temp = min_heap_t->array[0];
   min_heap_t->array[0] = min_heap_t->array[min_heap_t->size - 1];
@@ -78,7 +77,6 @@ struct min_huffman_node_t *extract_min(struct min_heap_t *min_heap_t) {
 
   return temp;
 }
-
 
 void insertmin_heap_t(struct min_heap_t *min_heap_t, struct min_huffman_node_t *min_heap_tNode) {
   ++min_heap_t->size;
@@ -152,51 +150,14 @@ void get_huffman_codes(struct huffman_code_t huffman_codes[], char item[], int f
   struct min_huffman_node_t *root = buildHuffmanTree(item, freq, size);
   
   int arr[MAX_TREE_HT], top = 0;
-
-  print_h_codes(root, arr, top);
-  if (root->left) {
-    printf("YES\n");
-  }
   
   int arr2[MAX_TREE_HT], top2 = 0;
-  /* struct huffman_code_t huffman_codes[size]; */
   int i;
   for (i = 0; i < size; i++) {
     huffman_codes[i].item = item[i];
-    printf("%c, ", huffman_codes[i].item);
   }
-  printf("\n");
 
   get_codes(root, huffman_codes, arr2, top2, size);
-
-
-  printf("~~~~~~~~~~~~~~\n");
-  printf("~~~~ TEST ~~~~\n");
-  printf("~~~~~~~~~~~~~~\n");
-  for (i = 0; i < size; i++) {
-    printf("%x ", huffman_codes[i].item);
-    int j;
-    for (j = 0; j < huffman_codes[i].len; j++) {
-      printf("%d", huffman_codes[i].code[j]);
-    }
-    printf("\n");
-  }
-  printf("~~~~~~~~~~~~~~\n");
-
-  /* sort_codes(huffman_codes, size); */
-  
-  printf("~~~~~~~~~~~~~~~~\n");
-  printf("~~~~ SORTED ~~~~\n");
-  printf("~~~~~~~~~~~~~~~~\n");
-  for (i = 0; i < size; i++) {
-    printf("%c ", huffman_codes[i].item);
-    int j;
-    for (j = 0; j < huffman_codes[i].len; j++) {
-      printf("%d", huffman_codes[i].code[j]);
-    }
-    printf("\n");
-  }
-  printf("~~~~~~~~~~~~~~\n");
 
 }
 
@@ -214,13 +175,10 @@ void get_codes(struct min_huffman_node_t *root, struct huffman_code_t huffman_co
     int i; 
     for (i = 0; i < n_items; i++) {
       if (huffman_codes[i].item == item) {
-        print_array(arr, top);
-
         int j;
         for (j = 0; j < top; j++) {
           huffman_codes[i].code[j] = arr[j];
         }
-
         huffman_codes[i].len = top;
       }
     }
