@@ -78,12 +78,18 @@ int main(int argc, char **argv)
 }
 
 void print_help() {
-	printf("Usage: huff [OPTIONS] FILE\n");
+	printf("Usage: huff [OPTIONS] [-c|-d] FILE [OUTPUT]\n");
 	printf("Compress or decompress FILE via the Huff algorithm.\n");
-	printf("If no options are passed, the FILE will be compressed.\n");
+	printf("If no options are passed, the FILE will be compressed. If no ");
+	printf("OUTPUT is provided, the input filename will be used with .huf");
+	printf("f added.\n");
 	printf("\n");
+	printf("Options:\n");
 	printf("  %-*s%-*s\n", HELP_ARG_WIDTH, "-h, --help", HELP_DESCRIPTION_WIDTH, "Display this help and exit." );
     printf("  %-*s%-*s\n", HELP_ARG_WIDTH, "-v, --verbose V", HELP_DESCRIPTION_WIDTH, "Set output verbosity. Valid values are 1, 2, 3, DEBUG." );
+    printf("  %-*s%-*s\n", HELP_ARG_WIDTH, "-c, --compress", HELP_DESCRIPTION_WIDTH, "Compress FILE." );
+    printf("  %-*s%-*s\n", HELP_ARG_WIDTH, "-d, --decompress", HELP_DESCRIPTION_WIDTH, "decompress FILE." );
+	
 }
 
 int file_exists(char file_name[]) {
@@ -138,6 +144,10 @@ struct cli_args_t parse_cli_args(int argc, char *argv[]) {
 			decompress_flag = 1;
 			found_flags++;
 		}
+	}
+	if (compress_flag == 1 && decompress_flag == 1) {
+		fprintf(stderr, "Cannot run with both compress/decompress set. Exiting\n");
+		exit(1);
 	}
 	struct cli_args_t cli_args = {
 		.compress_flag = compress_flag, 
