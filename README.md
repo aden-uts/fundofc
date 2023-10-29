@@ -4,8 +4,6 @@
   <img src="huff.png" alt="Huff Image">
 </div>
 
-![Huff Image](huff.png)
-
 ## Brief
 Develop a C program that works as a compact secure disk allowing users to store compressed and password protected files in one specific directory. The user may pass a document to the program, which encrypts the documents using a master password. The encrypted document is then compressed and stored in a directory. When required the user can decompress and decrypt the files through the program. The program may be able to batch process the tasks using command line arguments and/or work interactively. It may also come with an advanced search feature that looks for a specific keyword within an encrypted and compressed file.
 
