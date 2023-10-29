@@ -4,7 +4,6 @@
 #include "HuffmanCoding.h"
 #include "HuffmanUtils.h"
 
-
 struct min_huffman_node_t {
   char item;
   unsigned freq;
@@ -18,7 +17,8 @@ struct min_heap_t {
 };
 
 struct min_huffman_node_t *newNode(char item, unsigned freq) {
-  struct min_huffman_node_t *temp = (struct min_huffman_node_t *)malloc(sizeof(struct min_huffman_node_t));
+  struct min_huffman_node_t *temp =
+      (struct min_huffman_node_t *)malloc(sizeof(struct min_huffman_node_t));
 
   temp->left = temp->right = NULL;
   temp->item = item;
@@ -28,17 +28,21 @@ struct min_huffman_node_t *newNode(char item, unsigned freq) {
 }
 
 struct min_heap_t *createMinH(unsigned capacity) {
-  struct min_heap_t *min_heap_t = (struct min_heap_t *)malloc(sizeof(struct min_heap_t));
+  struct min_heap_t *min_heap_t =
+      (struct min_heap_t *)malloc(sizeof(struct min_heap_t));
 
   min_heap_t->size = 0;
 
   min_heap_t->capacity = capacity;
 
-  min_heap_t->array = (struct min_huffman_node_t **)malloc(min_heap_t->capacity * sizeof(struct min_huffman_node_t *));
+  min_heap_t->array = (struct min_huffman_node_t **)malloc(
+      min_heap_t->capacity * sizeof(struct min_huffman_node_t *));
   return min_heap_t;
 }
 
-void get_codes(struct min_huffman_node_t *root, struct huffman_code_t huffman_codes[], int arr[], int top, int n_items);
+void get_codes(struct min_huffman_node_t *root,
+               struct huffman_code_t huffman_codes[], int arr[], int top,
+               int n_items);
 
 void swap_node(struct min_huffman_node_t **a, struct min_huffman_node_t **b) {
   struct min_huffman_node_t *t = *a;
@@ -51,10 +55,12 @@ void min_heapify(struct min_heap_t *min_heap_t, int idx) {
   int left = 2 * idx + 1;
   int right = 2 * idx + 2;
 
-  if (left < min_heap_t->size && min_heap_t->array[left]->freq < min_heap_t->array[smallest]->freq)
+  if (left < min_heap_t->size &&
+      min_heap_t->array[left]->freq < min_heap_t->array[smallest]->freq)
     smallest = left;
 
-  if (right < min_heap_t->size && min_heap_t->array[right]->freq < min_heap_t->array[smallest]->freq)
+  if (right < min_heap_t->size &&
+      min_heap_t->array[right]->freq < min_heap_t->array[smallest]->freq)
     smallest = right;
 
   if (smallest != idx) {
@@ -62,7 +68,6 @@ void min_heapify(struct min_heap_t *min_heap_t, int idx) {
     min_heapify(min_heap_t, smallest);
   }
 }
-
 
 int check_size_one(struct min_heap_t *min_heap_t) {
   return (min_heap_t->size == 1);
@@ -78,7 +83,8 @@ struct min_huffman_node_t *extract_min(struct min_heap_t *min_heap_t) {
   return temp;
 }
 
-void insertmin_heap_t(struct min_heap_t *min_heap_t, struct min_huffman_node_t *min_heap_tNode) {
+void insertmin_heap_t(struct min_heap_t *min_heap_t,
+                      struct min_huffman_node_t *min_heap_tNode) {
   ++min_heap_t->size;
   int i = min_heap_t->size - 1;
 
@@ -141,14 +147,15 @@ void print_h_codes(struct min_huffman_node_t *root, int arr[], int top) {
     print_h_codes(root->right, arr, top + 1);
   }
   if (is_leaf(root)) {
-    printf("  %X\t| ", (unsigned char) root->item);
+    printf("  %X\t| ", (unsigned char)root->item);
     print_array(arr, top);
   }
 }
 
-void get_huffman_codes(struct huffman_code_t huffman_codes[], char item[], int freq[], int size) {
+void get_huffman_codes(struct huffman_code_t huffman_codes[], char item[],
+                       int freq[], int size) {
   struct min_huffman_node_t *root = buildHuffmanTree(item, freq, size);
-  
+
   int arr[MAX_TREE_HT], top = 0;
   int i;
   for (i = 0; i < size; i++) {
@@ -156,10 +163,11 @@ void get_huffman_codes(struct huffman_code_t huffman_codes[], char item[], int f
   }
 
   get_codes(root, huffman_codes, arr, top, size);
-
 }
 
-void get_codes(struct min_huffman_node_t *root, struct huffman_code_t huffman_codes[], int arr[], int top, int n_items) {
+void get_codes(struct min_huffman_node_t *root,
+               struct huffman_code_t huffman_codes[], int arr[], int top,
+               int n_items) {
   if (root->left) {
     arr[top] = 0;
     get_codes(root->left, huffman_codes, arr, top + 1, n_items);
@@ -170,7 +178,7 @@ void get_codes(struct min_huffman_node_t *root, struct huffman_code_t huffman_co
   }
   if (is_leaf(root)) {
     unsigned char item = root->item;
-    int i; 
+    int i;
     for (i = 0; i < n_items; i++) {
       if (huffman_codes[i].item == item) {
         int j;
@@ -200,7 +208,6 @@ void sort_codes(struct huffman_code_t huffman_codes[], int size) {
   }
 }
 
-
 void print_array(int arr[], int n) {
   int i;
   for (i = 0; i < n; ++i)
@@ -208,4 +215,3 @@ void print_array(int arr[], int n) {
 
   printf("\n");
 }
-

@@ -8,7 +8,8 @@
 
 void print_array(int arr[], int n);
 void huffman_codes(char item[], int freq[], int size);
-void get_huffman_codes(struct huffman_code_t huffman_codes[], char item[], int freq[], int size);
+void get_huffman_codes(struct huffman_code_t huffman_codes[], char item[],
+                       int freq[], int size);
 void sort_codes(struct huffman_code_t huffman_codes[], int size);
 
 #endif
