@@ -45,6 +45,7 @@ void get_key_offsets(int offsets[], struct huffman_key_t keys[], int n_elements,
 int bits_to_bytes(int n_bits);
 int compare_n_bits(int a[], int b[], int len, int offset_a, int offset_b);
 int load_to_buffer(int buffer[], FILE* fp, int size_bytes, int count, long int offset_bytes );
+void print_keys_with_offsets(struct huffman_key_t keys[], int offsets[], int n);
 
 struct huffman_header_t make_header(int symbol_size, int n_symbols, int table_size, int data_size) {
     struct huffman_header_t header;
@@ -82,8 +83,6 @@ void compress_input_file(FILE *fp, char output_file_name[], int verbose) {
 		- c for reading chars from file
 		- element count for number of items needing encoding
 	 */
-
-	if (verbose >= __V1) { printf("Beginning compression\n"); }
 
 	int i;
 	char chars[MAX_SYMBOLS];
@@ -291,7 +290,10 @@ void compress_input_file(FILE *fp, char output_file_name[], int verbose) {
 				for (j = 0; j < huffman_codes[i].len; j++) {
 					if (cache_i == CACHE_SIZE * 32) {
 						if (output_fp != NULL) {
-							fwrite(cache, sizeof(int), CACHE_SIZE, output_fp);
+							if (fwrite(cache, sizeof(int), CACHE_SIZE, output_fp) != CACHE_SIZE) {
+								perror("fwrite");
+								exit(1);
+							};
 							n_writes++;
 							if ((n_writes + 1) % progress_marker_every_n_writes == 0) {
 								if (verbose >= __V1) { 
@@ -314,27 +316,31 @@ void compress_input_file(FILE *fp, char output_file_name[], int verbose) {
 	}
 
 	if (output_fp != NULL) {
-		int success = fwrite(cache, sizeof(int) , CACHE_SIZE, output_fp);
+		if (fwrite(cache, sizeof(int) , CACHE_SIZE, output_fp) != CACHE_SIZE) {
+			perror("fwrite");
+			exit(1);
+		}
 		if (verbose >= __V1) { 
 			printf("\33[2K\r");
 			printf("%ldb/%ldb", required_data_bits / 8, required_data_bits / 8);
 			fflush(stdout);
 		}
 	}
-	if (verbose >= __V3) { printf("\nSuccess.\nClosing file\n"); }
+	if (verbose >= __V1) { printf("\nSuccess. Closing file\n"); }
 	fclose(output_fp);
 
 }
 
 void decompress_file(FILE* fp, char output_file_name[], int verbose) {
 
-	if (verbose >= __V2) { printf("Decompressing file...\n"); }
+	if (verbose >= __V3) { printf("Decompressing file...\n"); }
+	if (verbose >= __V3) { printf("Loading file metadata...\n"); }
 
 	struct huffman_header_t* header = (struct huffman_header_t *) malloc(sizeof(struct huffman_header_t));
 	load_header(header, fp, verbose);
+	if (verbose >= __V4) { print_header(*header); }
 
 	FILE* output_fp;
-	printf("%s", output_file_name);
 	output_fp = fopen(output_file_name, "wb");
 	if (!output_fp) {
 		perror("fopen");
@@ -343,32 +349,33 @@ void decompress_file(FILE* fp, char output_file_name[], int verbose) {
 	fseek(output_fp, 0, SEEK_SET);
 	
 	int compressed_bit_count = header->data_end - header->data_offset;
-	if (verbose >= __V2) { printf("%d bytes to decompress (%d bits)\n", bits_to_bytes(compressed_bit_count), compressed_bit_count); }
+	if (verbose >= __V4) { printf("%d bytes to decompress (%d bits)\n", bits_to_bytes(compressed_bit_count), compressed_bit_count); }
 
 	int n_symbols, min_code_len, max_code_len = 0;
 	n_symbols = header->n_symbols;
-	if (verbose >= __V3) { printf("%d symbols found...\n", n_symbols); }
+	if (verbose >= __V4) { printf("%d symbols found...\n", n_symbols); }
 
 	struct huffman_key_t keys[n_symbols];
 	load_keys(keys, fp, header->key_offset, n_symbols, verbose);
 	
 	int key_offsets[n_symbols];
 	get_key_offsets(key_offsets, keys, n_symbols, verbose);
+
+	if (verbose >= __V4) {
+		print_keys_with_offsets(keys, key_offsets, n_symbols);
+	}
 	
 	min_code_len = keys[0].len;
 	max_code_len = keys[n_symbols - 1].len;
 
-	if (verbose >= __V3) { printf("Min code length: %d\nMax code length: %d\n", min_code_len, max_code_len); }
-	if (verbose >= __V2) { printf("Starting data decompression...\n"); }
-
-	printf("Compressed data:\n");
-	print_compressed_data(fp, header->data_offset, header->data_end);
+	if (verbose >= __V4) { printf("Min code length: %d\nMax code length: %d\n", min_code_len, max_code_len); }
+	if (verbose >= __V3) { printf("Starting data decompression...\n"); }
 
 	int max_buffer_size = max_code_len / sizeof(int) / 8 + 2;
 	int max_buffer_size_bits = max_buffer_size * sizeof(int) * 8;
 	if (bits_to_bytes(compressed_bit_count)  < max_buffer_size) { max_buffer_size = bits_to_bytes(compressed_bit_count); }
 
-	if (verbose >= __V3) { printf("Setting buffer size to %d bits\n", max_buffer_size_bits); }
+	if (verbose >= __V4) { printf("Setting buffer size to %d bits\n", max_buffer_size_bits); }
 	
 	/* Setup input buffer */
 	int input_buffer[max_buffer_size];
@@ -379,20 +386,19 @@ void decompress_file(FILE* fp, char output_file_name[], int verbose) {
 		current_input_buffer_size_bits = compressed_bit_count;
 	}
 
-	if (verbose >= __V3) {
+	if (verbose >= __V4) {
 		printf("Loading to buffer...\n");
 	}
 
 	int input_byte_upto = 0;
 	load_to_buffer(input_buffer, fp, sizeof(input_buffer[0]), max_buffer_size, header->data_offset);
 	input_byte_upto += header->data_offset + (max_buffer_size * sizeof(input_buffer[0]));
-	printf("header data offset: %d\n", header->data_offset);
-	printf("input byte upto: %d\n", input_byte_upto);
-	print_n_bits(input_buffer, current_input_buffer_size_bits, 0, 0);
 
 	int unbuffered_bits = compressed_bit_count - current_input_buffer_size_bits;
-	printf("Unb: %d\n", unbuffered_bits);
 	int input_buffer_offset_bits = 0;
+
+	if (verbose >= __V1) { printf("Decompressing input to %s...\n", output_file_name); }
+	unsigned long int n_reads = 0;
 
 	while (current_input_buffer_size_bits > 0) {
 		
@@ -421,37 +427,21 @@ void decompress_file(FILE* fp, char output_file_name[], int verbose) {
 				current_key_buffer_size_bits--;
 
 				if (current_key_buffer_size_bits == max_buffer_size_bits - sizeof(key_buffer[0]) * 8) {
-					// printf("Adding\n");
 					int key_buffer_chunk_i;
 					for (key_buffer_chunk_i = 0; key_buffer_chunk_i < max_buffer_size - 1; key_buffer_chunk_i++) {
 						key_buffer[key_buffer_chunk_i] = key_buffer[key_buffer_chunk_i + 1];
 					}
 					load_to_buffer(key_buffer + max_buffer_size - 1, fp, sizeof(key_buffer[0]), 1, key_byte_upto);
-					// printf("Added: ");
-					// print_n_bits(key_buffer, sizeof(key_buffer[0]) * 8, sizeof(key_buffer[0] * 8), 0);
 					key_byte_upto += sizeof(key_buffer[0]);
 					current_key_buffer_size_bits += sizeof(key_buffer[0]) * 8;
-					// print_n_bits(key_buffer, current_key_buffer_size_bits, key_buffer_offset_bits, 0);
 					key_buffer_offset_bits -= sizeof(key_buffer[0]) * 8;
-					// print_n_bits(key_buffer, current_key_buffer_size_bits, key_buffer_offset_bits, 0);
-					// printf("\n");
 				}
 			}
-
-			// printf("Searched %d key bits\n", searched_key_bits);
-			// printf("kb:  ");
-			// print_n_bits(key_buffer, current_key_buffer_size_bits, key_buffer_offset_bits,0 );
-			// printf("buf: ");
-			// print_n_bits(input_buffer, current_input_buffer_size_bits, input_buffer_offset_bits, 0);
-
-			// print_n_bits(input_buffer, input_buffer_window_len, input_buffer_offset_bits, 0);
-			// print_n_bits(key_buffer, input_buffer_window_len, key_buffer_offset_bits, 0);
 			if (compare_n_bits(input_buffer, key_buffer, input_buffer_window_len, input_buffer_offset_bits, key_buffer_offset_bits) == 1) {
 				decompressed_input_bits = input_buffer_window_len;
 				putc(keys[search_key_i].item, output_fp);
 				break;
 			}
-			// printf("\n");
 			searched_key_bits = input_buffer_window_len;
 		}
 
@@ -462,22 +452,18 @@ void decompress_file(FILE* fp, char output_file_name[], int verbose) {
 
 			if (current_input_buffer_size_bits == max_buffer_size_bits - (sizeof(input_buffer[0]) * 8)
 				&& unbuffered_bits > 0) {
-				// printf("Buffer: ");
-				// print_n_bits(input_buffer, current_input_buffer_size_bits, input_buffer_offset_bits, 0);
 				int input_buffer_chunk_i;
 				for (input_buffer_chunk_i = 0; input_buffer_chunk_i < max_buffer_size - 1; input_buffer_chunk_i++) {
 					input_buffer[input_buffer_chunk_i] = input_buffer[input_buffer_chunk_i + 1];
 				}
-
 				int load_success;
 				load_success = load_to_buffer(input_buffer + max_buffer_size - 1, fp, sizeof(input_buffer[0]), 1, input_byte_upto);
-				// printf("Load count: %d\n", load_success);
 				if (load_success != 1) {
 					printf("Failed to load file to buffer, exiting\n");
-					if (verbose >= __V2) {
+					if (verbose >= __V4) {
 						printf("fread returned %d\n", load_success);
 					}
-					if (verbose >= __V3) {
+					if (verbose >= __V4) {
 						printf("Buffer: ");
 						print_n_bits(input_buffer, sizeof(input_buffer[0]) * max_buffer_size * 8, 0 ,0);
 						printf("Next byte: %d\n", input_byte_upto);
@@ -485,8 +471,12 @@ void decompress_file(FILE* fp, char output_file_name[], int verbose) {
 					}
 					exit(1);
 				}
-				printf("Added: ");
-				print_n_bits(input_buffer, 32, 32, 0);
+				n_reads++;
+				if (n_reads % 100 == 0 && verbose >= __V1) {
+					printf("\33[2K\r");
+					printf("%d bytes remaining...", unbuffered_bits / 8);
+					fflush(stdout);
+				}
 				input_buffer_offset_bits -= sizeof(input_buffer[0]) * 8;
 				if (unbuffered_bits < (sizeof(input_buffer[0]) * 8)) {
 					current_input_buffer_size_bits += unbuffered_bits;
@@ -497,18 +487,22 @@ void decompress_file(FILE* fp, char output_file_name[], int verbose) {
 				}
 
 				input_byte_upto += sizeof(input_buffer[0]);
-				// print_n_bits(input_buffer, current_input_buffer_size_bits, input_buffer_offset_bits, 0);
-				// printf("Remaining bits: %d\n", unbuffered_bits);
-				// printf("input_byte_upto: %d\n", input_byte_upto);
-
 			}
 		}
 	}
+	if (verbose >= __V1) {
+		printf("\33[2K\r");
+		printf("0 bytes remaining...");
+		fflush(stdout);
+		printf("\nSuccess. Closing file.\n");
+	}
+	fclose(fp);
+	fclose(output_fp);
 }
 
 void get_key_offsets(int offsets[], struct huffman_key_t keys[], int n_elements, int verbose) {
 	
-	if (verbose >= __V2) { printf("Calcuating offsets...\n"); }
+	if (verbose >= __V3) { printf("Calculating offsets...\n"); }
 
 	int i;
 	int offset = 0;
@@ -517,13 +511,7 @@ void get_key_offsets(int offsets[], struct huffman_key_t keys[], int n_elements,
 		offset += keys[i].len;
 	}
 
-	if (verbose >= __V2) { printf("Success\n"); }
-	if (verbose >= __V3) { 
-		int i;
-		for (i = 0; i < n_elements; i++) {
-			printf("%X\t%d\n", keys[i].item, offsets[i]);
-		}
-	}
+	if (verbose >= __V3) { printf("Success\n"); }
 }
 
 int bits_to_bytes(int n_bits) { return n_bits / 8 + 1; }
@@ -537,26 +525,27 @@ int load_to_buffer(int buffer[], FILE* fp, int size_bytes, int count, long int o
 	return read_count;
 }
 
-void print_keys(struct huffman_key_t keys[], int n) {
-	printf("Item\tCode Length\n");
-	int i;
-	for (i = 0; i < n; i++) {
-		printf("%X\t%d\n", keys[i].item, keys[i].len);
-	}
+void print_keys_with_offsets(struct huffman_key_t keys[], int offsets[], int n) {
+    printf("+------+-------------+-------+\n");
+    printf("| Item | Code Length | Offset|\n");
+    printf("+------+-------------+-------+\n");
+    int i;
+    for (i = 0; i < n; i++) {
+        printf("| 0x%-2X | %-11d | %-5d |\n", keys[i].item, keys[i].len, offsets[i]);
+    }
+    printf("+------+-------------+-------+\n");
 }
 
 void load_keys(struct huffman_key_t keys[], FILE* fp, int offset, int n_symbols, int verbose) {
-	if (verbose >= __V2) { printf("Loading keys...\n"); }
+	if (verbose >= __V3) { printf("Loading keys...\n"); }
 	fseek(fp, offset, SEEK_SET);
 	int n = fread(keys, sizeof(struct huffman_key_t), n_symbols, fp);
 	if (n != n_symbols) {
 		printf("Invalid keys, exiting.\n");
 		exit(1);
-	} else if (verbose >= __V2) {
+	} else if (verbose >= __V3) {
 		printf("Loaded keys...\n");
 	}
-
-	if (verbose >= __V3) { print_keys(keys, n_symbols); }
 
 }
 
@@ -564,7 +553,7 @@ int load_header(struct huffman_header_t* header_p, FILE* fp, int verbose) {
 
 	unsigned char valid_signature[4] = {'H', 'U', 'F', 'F'};
 
-	if (verbose >= __V4)  { printf("Loading header...\n"); }
+	if (verbose >= __V3)  { printf("Loading header ... "); }
 
 	if (fseek(fp, 0, SEEK_SET) != 0) {
 		perror("fseek");
@@ -584,8 +573,7 @@ int load_header(struct huffman_header_t* header_p, FILE* fp, int verbose) {
 	fseek(fp, 0, SEEK_SET);
 	fread(header_p, sizeof(struct huffman_header_t), 1, fp);
 
-	if (verbose >= __V2) { printf("Loaded header...\n"); }
-	if (verbose >= __V3) { print_header(*header_p); }
+	if (verbose >= __V3) { printf("Success\n"); }
 	return 1;
 }
 
