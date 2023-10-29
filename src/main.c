@@ -104,7 +104,7 @@ int file_exists(char file_name[]) {
 
 struct cli_args_t parse_cli_args(int argc, char *argv[]) {
 	if(argc < 2) {
-		printf("Usage: %s FILENAME \n", argv[0]);
+		print_help();
 		exit(1);
 	}
 
