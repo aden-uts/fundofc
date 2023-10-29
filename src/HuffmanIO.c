@@ -37,10 +37,10 @@ int test_bit(int A[], int k);
 int compress_huffman_code(struct huffman_code_t huffman_code);
 void print_n_bits(int num[], int n, int offset, int marker);
 void clear_int_array(int a[], int len);
-void decompress_file(FILE* fp, FILE* fp_out, int verbose);
+void decompress_file(FILE* fp, char output_file_name[], int verbose);
 void print_compressed_data(FILE* fp, int data_offset, int data_end);
 int compare_bits_at_pos(int a[], int b[], int i, int j);
-void load_header(struct huffman_header_t* header_p, FILE* fp, int verbose);
+int load_header(struct huffman_header_t* header_p, FILE* fp, int verbose);
 void load_keys(struct huffman_key_t keys[], FILE* fp, int offset, int n_symbols, int verbose);
 void get_key_offsets(int offsets[], struct huffman_key_t keys[], int n_elements, int verbose);
 int bits_to_bytes(int n_bits);
@@ -70,11 +70,7 @@ void print_header(struct huffman_header_t header) {
 	printf("Data end: \t%ld\n", header.data_end);
 }
 
-void get_codes_from_input(FILE* fp) {
-
-}
-
-void compress_input_file(FILE *fp) {
+void compress_input_file(FILE *fp, char output_file_name[]) {
 	
 	/* init vars
 		- i for many for loops
@@ -128,39 +124,6 @@ void compress_input_file(FILE *fp) {
 	} 
 	sort_codes(huffman_codes, element_count);
 
-
-	/* ######### THIS SHOULD BE MOVED #########  */
-
-	FILE * output_fp = fopen("output", "wb");
-
-	printf("Opened file...\n");
-    if (output_fp != NULL) {
-    	fwrite(huffman_codes, sizeof(struct huffman_code_t) , element_count, output_fp);
-		fclose(output_fp);
-	}
-	printf("Wrote to file...\n");
-
-	struct huffman_code_t huffman_codes_large[element_count];
-
-	printf("Testing load...\n");
-	FILE * input_fp = fopen("output", "r");
-
-	
-	printf("Testing read...\n");
-	fread(huffman_codes_large, sizeof(struct huffman_code_t), element_count, input_fp);
-	for (i = 0; i < element_count; i++) {
-		printf("%x ", huffman_codes_large[i].item);
-		int j;
-		for (j = 0; j < huffman_codes_large[i].len; j++) {
-			printf("%d", huffman_codes_large[i].code[j]);
-		}
-		printf("\n");
-	}
-
-	printf("Testing compression...\n");
-	compress_huffman_code(huffman_codes[0]);
-	printf("Compression done...\n");
-	
 	struct huffman_code_compressed_t huffman_codes_compressed[element_count];
 
 	printf("Starting loop...\n");
@@ -168,13 +131,6 @@ void compress_input_file(FILE *fp) {
 		huffman_codes_compressed[i].item = huffman_codes[i].item;
 		huffman_codes_compressed[i].len = huffman_codes[i].len;
 		huffman_codes_compressed[i].code[0] = compress_huffman_code(huffman_codes[i]);
-	}
-
-	FILE * output_compressed_fp = fopen("outputcompressed", "w");
-
-    if (output_compressed_fp != NULL) {
-    	fwrite(huffman_codes_compressed, sizeof(struct huffman_code_compressed_t) , element_count, output_compressed_fp);
-		fclose(output_compressed_fp);
 	}
 
 	int sum = 0;
@@ -237,11 +193,12 @@ void compress_input_file(FILE *fp) {
 	struct huffman_header_t output_header = make_header(1, element_count, table_size, required_data_bits);
 	fseek(fp, 0L, SEEK_END);
 
-	FILE * output_compress_file = fopen("outputfile", "wb");
+	// FILE * output_compress_file = fopen("outputfile", "wb");
 
-	fwrite(&output_header, sizeof(struct huffman_header_t), 1, output_compress_file);
-	fwrite(huffman_keys, sizeof(struct huffman_key_t), element_count, output_compress_file);
-	fwrite(test_compress, sizeof(test_compress[0]) , required_bits, output_compress_file);
+	FILE * output_fp = fopen(output_file_name, "wb");
+	fwrite(&output_header, sizeof(struct huffman_header_t), 1, output_fp);
+	fwrite(huffman_keys, sizeof(struct huffman_key_t), element_count, output_fp);
+	fwrite(test_compress, sizeof(test_compress[0]) , required_bits, output_fp);
 
 
 	fseek(fp, 0, SEEK_SET);
@@ -259,18 +216,18 @@ void compress_input_file(FILE *fp) {
 		int i;
 		for (i = 0; i < element_count; i++) {
 
-			if (c_i == huffman_codes_large[i].item) {
+			if (c_i == huffman_codes[i].item) {
 				int j;
-				for (j = 0; j < huffman_codes_large[i].len; j++) {
+				for (j = 0; j < huffman_codes[i].len; j++) {
 					if (cache_i == CACHE_SIZE * 32) {
-						if (output_compress_file != NULL) {
-							fwrite(cache, sizeof(int), CACHE_SIZE, output_compress_file);
+						if (output_fp != NULL) {
+							fwrite(cache, sizeof(int), CACHE_SIZE, output_fp);
 						}
 						clear_int_array(cache, CACHE_SIZE);
 
 						cache_i = 0;
 					}
-					if (huffman_codes_large[i].code[j] == 1) {
+					if (huffman_codes[i].code[j] == 1) {
 						set_bit(cache, cache_i);
 					}
 					cache_i++;
@@ -278,31 +235,35 @@ void compress_input_file(FILE *fp) {
 			}
 		}
 	}
-	if (output_compress_file != NULL) {
+
+	if (output_fp != NULL) {
 		printf("Final cache write...\n");
 		for (i = 0; i < CACHE_SIZE; i++) {
 			print_bits(cache[i]);
 		}
-		int success = fwrite(cache, sizeof(int) , CACHE_SIZE, output_compress_file);
+		int success = fwrite(cache, sizeof(int) , CACHE_SIZE, output_fp);
 		printf("Success: %d\n", success);
 	}
-	fclose(output_compress_file);
+	fclose(output_fp);
 	printf("Count: %lu", count);
 
-	/* ######### LOADING FULL FILE ############ */
-	FILE * input_output_file = fopen("outputfile", "rb");
-	FILE * decompressed_file = fopen("decompress", "w");
-
-	decompress_file(input_output_file, decompressed_file, __V3);
 }
 
-void decompress_file(FILE* fp, FILE* fp_out, int verbose) {
-	fseek(fp_out, 0, SEEK_SET);
+void decompress_file(FILE* fp, char output_file_name[], int verbose) {
 
 	if (verbose >= __V2) { printf("Decompressing file...\n"); }
 
 	struct huffman_header_t* header = (struct huffman_header_t *) malloc(sizeof(struct huffman_header_t));
 	load_header(header, fp, verbose);
+
+	FILE* output_fp;
+	printf("%s", output_file_name);
+	output_fp = fopen(output_file_name, "wb");
+	if (!output_fp) {
+		perror("fopen");
+		exit(1);
+	}
+	fseek(output_fp, 0, SEEK_SET);
 	
 	int compressed_bit_count = header->data_end - header->data_offset;
 	if (verbose >= __V2) { printf("%d bytes to decompress (%d bits)\n", bits_to_bytes(compressed_bit_count), compressed_bit_count); }
@@ -410,7 +371,7 @@ void decompress_file(FILE* fp, FILE* fp_out, int verbose) {
 			// print_n_bits(key_buffer, input_buffer_window_len, key_buffer_offset_bits, 0);
 			if (compare_n_bits(input_buffer, key_buffer, input_buffer_window_len, input_buffer_offset_bits, key_buffer_offset_bits) == 1) {
 				decompressed_input_bits = input_buffer_window_len;
-				putc(keys[search_key_i].item, fp_out);
+				putc(keys[search_key_i].item, output_fp);
 				break;
 			}
 			// printf("\n");
@@ -522,18 +483,24 @@ void load_keys(struct huffman_key_t keys[], FILE* fp, int offset, int n_symbols,
 
 }
 
-void load_header(struct huffman_header_t* header_p, FILE* fp, int verbose) {
+int load_header(struct huffman_header_t* header_p, FILE* fp, int verbose) {
 
 	unsigned char valid_signature[4] = {'H', 'U', 'F', 'F'};
 
-	if (verbose >= __V3)  { printf("Loading header...\n"); }
+	if (verbose >= __V4)  { printf("Loading header...\n"); }
 
-	fseek(fp, 0, SEEK_SET);
+	if (fseek(fp, 0, SEEK_SET) != 0) {
+		perror("fseek");
+		exit(1);
+	};
 	unsigned char signature [4];
-	fread(signature, sizeof(unsigned char), SIGNATURE_LEN, fp);
+	if (fread(signature, sizeof(unsigned char), SIGNATURE_LEN, fp) != SIGNATURE_LEN) {
+		perror("fread");
+		exit(1);
+	}
 	int signature_test = memcmp(signature, valid_signature, SIGNATURE_LEN * sizeof(unsigned char));
 	if (signature_test != 0) {
-		printf("Invalid file, exiting\n");
+		fprintf(stderr, "Invalid input file, exiting\n");
 		exit(1);
 	}
 
@@ -542,6 +509,7 @@ void load_header(struct huffman_header_t* header_p, FILE* fp, int verbose) {
 
 	if (verbose >= __V2) { printf("Loaded header...\n"); }
 	if (verbose >= __V3) { print_header(*header_p); }
+	return 1;
 }
 
 int compare_n_bits(int a[], int b[], int len, int offset_a, int offset_b) {
