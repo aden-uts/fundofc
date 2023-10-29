@@ -122,7 +122,7 @@ void compress_input_file(FILE *fp, char output_file_name[], int verbose) {
 	if (verbose >= __V3) { printf("Success\n"); }
 	if (verbose >= __V4) {
 		printf("Distinct characters in input: %d\n", element_count);
-		printf("|-----------------------------|");
+		printf("|-----------------------------|\n");
 		printf("| Char           | Frequency  |\n");
     	printf("|----------------|------------|\n");
     	for (i = 0; i < element_count; i++) {
