@@ -1,5 +1,9 @@
 # Huff
 
+<div align="center">
+  <img src="huff.png" alt="Huff Image">
+</div>
+
 ![Huff Image](huff.png)
 
 ## Brief
