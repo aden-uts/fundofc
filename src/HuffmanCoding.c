@@ -150,14 +150,12 @@ void get_huffman_codes(struct huffman_code_t huffman_codes[], char item[], int f
   struct min_huffman_node_t *root = buildHuffmanTree(item, freq, size);
   
   int arr[MAX_TREE_HT], top = 0;
-  
-  int arr2[MAX_TREE_HT], top2 = 0;
   int i;
   for (i = 0; i < size; i++) {
     huffman_codes[i].item = item[i];
   }
 
-  get_codes(root, huffman_codes, arr2, top2, size);
+  get_codes(root, huffman_codes, arr, top, size);
 
 }
 

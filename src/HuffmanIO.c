@@ -60,13 +60,19 @@ struct huffman_header_t make_header(int symbol_size, int n_symbols, int table_si
 }
 
 void print_header(struct huffman_header_t header) {
-    printf("Signature:\t%s\n", header.signature);
-    printf("Symbol Size: \t%d bytes\n", header.symbol_size);
-    printf("N Symbols: \t%d\n", header.n_symbols);
-	printf("Key offset: \t%d\n", header.key_offset);
-    printf("Table Offset: \t%d\n", header.table_offset);
-	printf("Data offset: \t%d\n", header.data_offset);
-	printf("Data end: \t%ld\n", header.data_end);
+    printf("+----------------------------------------+\n");
+    printf("|               Header                   |\n");
+    printf("+-----------------+----------------------+\n");
+    printf("| Field           | Value                |\n");
+    printf("+-----------------+----------------------+\n");
+    printf("| Signature       | %-20s  |\n", header.signature);
+    printf("| Symbol Size     | %-20d |\n", header.symbol_size);
+    printf("| N Symbols       | %-20d |\n", header.n_symbols);
+    printf("| Key offset      | %-20d |\n", header.key_offset);
+    printf("| Table Offset    | %-20d |\n", header.table_offset);
+    printf("| Data offset     | %-20d |\n", header.data_offset);
+    printf("| Data end        | %-20ld |\n", header.data_end);
+    printf("+-----------------+----------------------+\n");
 }
 
 void compress_input_file(FILE *fp, char output_file_name[], int verbose) {
@@ -133,46 +139,56 @@ void compress_input_file(FILE *fp, char output_file_name[], int verbose) {
 
 	/* Genereate Huffman codes */
 	/* Codes are stored as char array initially, but compressed later on */
+	if (verbose >= __V3) { printf("Generating Huffman codes for %d chars ... ", element_count); }
 	struct huffman_code_t huffman_codes[element_count];
 	get_huffman_codes(huffman_codes, chars, char_counts, element_count);
-	
+	if (verbose >= __V3) { printf("Success\n"); }
 	/* Calculate the required number of bits to compress the file */
+	if (verbose >= __V3) { printf("Calculating number of bits required for compressed file ... "); }
 	long unsigned int required_data_bits = 0;
 	for (i = 0; i < element_count; i++) {
 		required_data_bits += huffman_codes[i].len * char_counts[i];
 	} 
+	if (verbose >= __V3) { printf("Success\n"); }
+	if (verbose >= __V4) { printf("Required bits after compression: %ld\n", required_data_bits); }
 
 
 	/* Codes need to be sorted by length for compression in code table */
+	if (verbose >= __V3) { printf("Sorting codes ... "); }
 	sort_codes(huffman_codes, element_count);
+	if (verbose >= __V3) { printf("Success\n"); }
+	if (verbose >= __V4) {
+		printf("|-----------------------------|\n");
+		printf("| Char           | Code  |\n");
+    	printf("|----------------|------------|\n");
+    	for (i = 0; i < element_count; i++) {
+			printf("| 0x%-12x | ", huffman_codes[i].item);
+			int j;
+			for (j = 0; j < huffman_codes[i].len; j++) {
+				printf("%u", huffman_codes[i].code[j]);
+			}
+			printf("\n");
 
-
-
-	/* Compress char array codes from huffman_codes to bit arrays */
-	struct huffman_code_compressed_t huffman_codes_compressed[element_count];
-
-	for (i = 0; i < element_count; i++) {
-		huffman_codes_compressed[i].item = huffman_codes[i].item;
-		huffman_codes_compressed[i].len = huffman_codes[i].len;
-		huffman_codes_compressed[i].code[0] = compress_huffman_code(huffman_codes[i]);
+		}
+		printf("|-----------------------------|\n");
 	}
 
 	/* Calculate total length of codes */
-
+	if (verbose >= __V3) { printf("Calculating bits required for code table ... "); }
 	unsigned int code_length_total = 0;
 	for (i = 0; i < element_count; i++) {
 		code_length_total += huffman_codes[i].len;
 	}
+	if (verbose >= __V3) { printf("Success\n"); }
+	if (verbose >= __V4) { printf("Bits required for code table: %d\n", code_length_total); }
 
-	int required_bits = (code_length_total / (sizeof(int) * 8)) + 1;	
+	int n_ints_in_code_table = (code_length_total / (sizeof(int) * 8)) + 1;	
+	if (verbose >= __V4) { printf("Setting bit array to %d ints\n", n_ints_in_code_table); }
 	
 	/* Fit code bit arrays into one larger bit array (code table) */
-
-	int code_table_bit_array[required_bits];
-
-	for (i = 0; i < required_bits; i++) {
-		code_table_bit_array[i] = 0;
-	}
+	if (verbose >= __V3) { printf("Writing codes to bit array ... "); }
+	int code_table_bit_array[n_ints_in_code_table];
+	clear_int_array(code_table_bit_array, n_ints_in_code_table);
 
 	int upto = 0;		
 	for (i = 0; i < element_count; i++) {
@@ -184,62 +200,108 @@ void compress_input_file(FILE *fp, char output_file_name[], int verbose) {
 		}
 		upto += huffman_codes[i].len;
 	}
+	if (verbose >= __V3) { printf("Success\n"); }
+	if (verbose >= __V4) {
+		printf("Code table bit array (| denotes end of information and start of padding)\n");
+		print_n_bits(code_table_bit_array, sizeof(code_table_bit_array[0]) * n_ints_in_code_table * 8, 0, code_length_total);
+	}
+
+	if (verbose >= __V3) { printf("Generating keys to be stored in compressed file ... "); }
 
 	struct huffman_key_t huffman_keys[element_count];
 	for (i = 0; i < element_count; i++) {
 		huffman_keys[i].item = huffman_codes[i].item;
 		huffman_keys[i].len = huffman_codes[i].len;
 	}
+	if (verbose >= __V3) { printf("Success\n"); }
+	
 
-	/* ######### OUTPUTTING FULL FILE ############ */
-	int table_size = sizeof(code_table_bit_array[0]) * required_bits;
+	if (verbose >= __V3) { printf("Preparing to write file...\n"); }
+	int table_size = sizeof(code_table_bit_array[0]) * n_ints_in_code_table;
+	if (verbose >= __V4) { printf("Generating header for compressed file ... "); }
 	struct huffman_header_t output_header = make_header(1, element_count, table_size, required_data_bits);
+	if (verbose >= __V4) {
+		printf("Success\n"); 
+		print_header(output_header);
+	}
 	fseek(fp, 0L, SEEK_END);
 
-	// FILE * output_compress_file = fopen("outputfile", "wb");
 
+	if (verbose >= __V3) { printf("Creating output file ... "); }
 	FILE * output_fp = fopen(output_file_name, "wb");
 	if (!output_fp) {
 		perror("fopen");
 		exit(1);
 	}
+	if (verbose >= __V3) { printf("Success\n"); }
+	if (verbose == __V3) { printf("Writing metadata to file ... "); }
+	if (verbose >= __V4) { printf("Writing header to file ... "); }
 	if (fwrite(&output_header, sizeof(struct huffman_header_t), 1, output_fp) != 1) {
 		perror("fwrite");
 		exit(1);
 	}
+	if (verbose >= __V4) { printf("Success\n"); }
+	if (verbose >= __V4) { printf("Writing keys to file ... "); }
 	if (fwrite(huffman_keys, sizeof(struct huffman_key_t), element_count, output_fp) != element_count) {
 		perror("fwrite");
 		exit(1);
 	}
-	if (fwrite(code_table_bit_array, sizeof(code_table_bit_array[0]) , required_bits, output_fp) != required_bits) {
+	if (verbose >= __V4) { printf("Success\n"); }
+	if (verbose >= __V4) { printf("Writing code table to file ... "); }
+	if (fwrite(code_table_bit_array, sizeof(code_table_bit_array[0]) , n_ints_in_code_table, output_fp) != n_ints_in_code_table) {
 		perror("fwrite");
 		exit(1);
 	}
+	if (verbose >= __V3) { printf("Success\n"); }
+
+	if (verbose >= __V3) { printf("Running Huffman coding on input data ... "); }
+	/* Navigate to beginning of input file (just in case) */
 	if (fseek(fp, 0, SEEK_SET) != 0) {
 		perror("fseek");
 		exit(1);
 	}
+
+	/* 
+		Create cache for holding codes as they're calculated,
+		once there are (CACHE_SIZE * 32) bits write the cache to the output
+		file and clear it to start filling again
+	*/
+
+	/* note cache size set to 2 since length of code will never be longer than 32 bits */
+
 	int cache[CACHE_SIZE];
+	long int cache_size_bits = sizeof(cache[0]) * CACHE_SIZE * 8;
 	clear_int_array(cache, CACHE_SIZE);
+	if (verbose >= __V4) {
+		printf("\nCreated buffer with size %ld bytes (%ld bits)\n",
+		sizeof(cache[0]) * CACHE_SIZE, cache_size_bits);
+	}
+	/* used for counting where we are up to in the cache when filling with codes */
 	int cache_i = 0;
-	long unsigned int count = 0;
+	/* used for loading in chars from the input file */
 	unsigned char ch[1];
+	int progress_marker_every_n_writes = required_data_bits / cache_size_bits / 100 + 1;
+	if (verbose >= __V1) { printf("Compressing input to %s...\n", output_file_name); }
+	unsigned long int n_writes = 0;
 	while (fread(ch, sizeof(ch), 1, fp) == 1) {
-		count ++;
-		
-		unsigned char c_i = (unsigned char) ch[0];
 		int i;
 		for (i = 0; i < element_count; i++) {
-
-			if (c_i == huffman_codes[i].item) {
+			if (ch[0] == huffman_codes[i].item) {
 				int j;
 				for (j = 0; j < huffman_codes[i].len; j++) {
 					if (cache_i == CACHE_SIZE * 32) {
 						if (output_fp != NULL) {
 							fwrite(cache, sizeof(int), CACHE_SIZE, output_fp);
+							n_writes++;
+							if ((n_writes + 1) % progress_marker_every_n_writes == 0) {
+								if (verbose >= __V1) { 
+									printf("\33[2K\r");
+									printf("%ldb/%ldb", n_writes * cache_size_bits / 8, required_data_bits / 8);
+									fflush(stdout);
+								}
+							}
 						}
 						clear_int_array(cache, CACHE_SIZE);
-
 						cache_i = 0;
 					}
 					if (huffman_codes[i].code[j] == 1) {
@@ -253,8 +315,13 @@ void compress_input_file(FILE *fp, char output_file_name[], int verbose) {
 
 	if (output_fp != NULL) {
 		int success = fwrite(cache, sizeof(int) , CACHE_SIZE, output_fp);
-		printf("Success: %d\n", success);
+		if (verbose >= __V1) { 
+			printf("\33[2K\r");
+			printf("%ldb/%ldb", required_data_bits / 8, required_data_bits / 8);
+			fflush(stdout);
+		}
 	}
+	if (verbose >= __V3) { printf("\nSuccess.\nClosing file\n"); }
 	fclose(output_fp);
 
 }
@@ -599,6 +666,12 @@ void print_n_bits(int num[], int n, int offset, int marker) {
 			printf("|");
 		}
 		printf("%d", ( (num[i/size] & (1 << (i%size) )) != 0 ));  
+		if ((i + 1) % 8 == 0) {
+			printf(" ");
+		}
+		if ((i + 1) % (8 * sizeof(int)) == 0) {
+			printf("\n");
+		}
         
 	}
     
