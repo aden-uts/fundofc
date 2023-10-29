@@ -2,3 +2,9 @@ BasedOnStyle: LLVM
 IndentWidth: 4
 UseTab: Never
 ColumnLimit: 80
+AlignTrailingComments: true
+AllowShortBlocksOnASingleLine: false
+AlwaysBreakAfterDefinitionReturnType: All
+AlwaysBreakAfterReturnType: All
+AllowShortFunctionsOnASingleLine: None
+BreakBeforeBraces: Allman

@@ -682,7 +682,7 @@ int load_header(struct huffman_header_t *header_p, FILE *fp, int verbose) {
   if (fseek(fp, 0, SEEK_SET) != 0) {
     perror("fseek");
     exit(1);
-  };
+  }
   unsigned char signature[4];
   if (fread(signature, sizeof(unsigned char), SIGNATURE_LEN, fp) !=
       SIGNATURE_LEN) {
