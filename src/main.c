@@ -1,3 +1,13 @@
+/*******************************************************************************
+Author: Aden Northcote, Emery Strasser, Jonathon Ngo and Jordan Stevens
+Date: 05/11/2023
+Purpose: This program compresses any file using Huffman Encoding with high entropy.
+*******************************************************************************/
+
+
+/*******************************************************************************
+Include header files and function prototypes
+*******************************************************************************/
 #include "HuffmanCoding.h"
 #include "HuffmanIO.h"
 
@@ -25,6 +35,10 @@ void print_help();
 int file_exists(char file_name[]);
 struct cli_args_t parse_cli_args(int argc, char *argv[]);
 
+
+/*******************************************************************************
+main
+*******************************************************************************/
 int main(int argc, char **argv) {
 
   struct cli_args_t cli_args = parse_cli_args(argc, argv);
@@ -92,6 +106,16 @@ int main(int argc, char **argv) {
   return 1;
 }
 
+
+/*******************************************************************************
+print_help
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void print_help() {
   printf("Usage: huff [OPTIONS] [-c|-d] FILE [OUTPUT]\n");
   printf("Compress or decompress FILE via the Huff algorithm.\n");
@@ -111,6 +135,16 @@ void print_help() {
          HELP_DESCRIPTION_WIDTH, "decompress FILE.");
 }
 
+
+/*******************************************************************************
+file_exists
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 int file_exists(char file_name[]) {
   FILE *fp;
   if ((fp = fopen(file_name, "rb"))) {
@@ -121,6 +155,16 @@ int file_exists(char file_name[]) {
   }
 }
 
+
+/*******************************************************************************
+parse_cli_args
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 struct cli_args_t parse_cli_args(int argc, char *argv[]) {
   if (argc < 2) {
     print_help();

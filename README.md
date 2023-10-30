@@ -17,7 +17,7 @@ You could even create your own compression and/or encryption algorithm. Or you c
 NOTE: Unlike the assignment, the group project is open ended. You are free to add your own features to the program as you see fit. You will not get a template source file.
 
  - Possible functions required:
- - Create User - SHould generate password and directory for upload.
+ - Create User - Should generate password and directory for upload.
  - Upload file
  - Sign out
  - Login

@@ -1,4 +1,14 @@
-#include <stdio.h>
+/*******************************************************************************
+Author: Aden Northcote, Emery Strasser, Jonathon Ngo and Jordan Stevens
+Date: 05/11/2023
+Purpose: This program compresses any file using Huffman Encoding with high entropy.
+*******************************************************************************/
+
+
+/*******************************************************************************
+Include header files and function prototypes
+*******************************************************************************/
+#include <stdio.h> /* printf, scanf */
 #include <stdlib.h>
 #include <string.h>
 
@@ -30,6 +40,7 @@ struct huffman_key_t {
   unsigned char item;
 };
 
+void print_header(struct huffman_header_t header);
 void print_bits(int num);
 void set_bit(int A[], int k);
 int test_bit(int A[], int k);
@@ -65,6 +76,14 @@ struct huffman_header_t make_header(int symbol_size, int n_symbols,
   return header;
 }
 
+/*******************************************************************************
+print_header
+This function prints the location in characters of key decompressing and compressing data in the algorithm.
+inputs:
+- header structure
+outputs:
+- none
+*******************************************************************************/
 void print_header(struct huffman_header_t header) {
   printf("+----------------------------------------+\n");
   printf("|               Header                   |\n");
@@ -81,6 +100,15 @@ void print_header(struct huffman_header_t header) {
   printf("+-----------------+----------------------+\n");
 }
 
+/*******************************************************************************
+compress_input_file
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void compress_input_file(FILE *fp, char output_file_name[], int verbose) {
 
   /* init vars
@@ -612,6 +640,16 @@ void decompress_file(FILE *fp, char output_file_name[], int verbose) {
   fclose(output_fp);
 }
 
+
+/*******************************************************************************
+get_key_offsets
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void get_key_offsets(int offsets[], struct huffman_key_t keys[], int n_elements,
                      int verbose) {
 
@@ -631,8 +669,27 @@ void get_key_offsets(int offsets[], struct huffman_key_t keys[], int n_elements,
   }
 }
 
+/*******************************************************************************
+bits_to_bytes
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 int bits_to_bytes(int n_bits) { return n_bits / 8 + 1; }
 
+
+/*******************************************************************************
+load_to_buffer
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 int load_to_buffer(int buffer[], FILE *fp, int size_bytes, int count,
                    long int offset_bytes) {
   fseek(fp, offset_bytes, SEEK_SET);
@@ -643,6 +700,16 @@ int load_to_buffer(int buffer[], FILE *fp, int size_bytes, int count,
   return read_count;
 }
 
+
+/*******************************************************************************
+print_keys_with_offsets
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void print_keys_with_offsets(struct huffman_key_t keys[], int offsets[],
                              int n) {
   printf("+------+-------------+-------+\n");
@@ -656,6 +723,16 @@ void print_keys_with_offsets(struct huffman_key_t keys[], int offsets[],
   printf("+------+-------------+-------+\n");
 }
 
+
+/*******************************************************************************
+load_keys
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void load_keys(struct huffman_key_t keys[], FILE *fp, int offset, int n_symbols,
                int verbose) {
   if (verbose >= __V3) {
@@ -670,7 +747,15 @@ void load_keys(struct huffman_key_t keys[], FILE *fp, int offset, int n_symbols,
     printf("Loaded keys...\n");
   }
 }
-
+/*******************************************************************************
+load_header
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 int load_header(struct huffman_header_t *header_p, FILE *fp, int verbose) {
 
   unsigned char valid_signature[4] = {'H', 'U', 'F', 'F'};
@@ -705,6 +790,16 @@ int load_header(struct huffman_header_t *header_p, FILE *fp, int verbose) {
   return 1;
 }
 
+
+/*******************************************************************************
+compare_n_bits
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 int compare_n_bits(int a[], int b[], int len, int offset_a, int offset_b) {
   int i;
   for (i = 0; i < len; i++) {
@@ -715,6 +810,16 @@ int compare_n_bits(int a[], int b[], int len, int offset_a, int offset_b) {
   return 1;
 }
 
+
+/*******************************************************************************
+clear_int_array
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void clear_int_array(int a[], int len) {
   int i;
   for (i = 0; i < len; i++) {
@@ -722,6 +827,16 @@ void clear_int_array(int a[], int len) {
   }
 }
 
+
+/*******************************************************************************
+compress_huffman_code
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 int compress_huffman_code(struct huffman_code_t huffman_code) {
   struct huffman_code_compressed_t *huffman_compressed =
       (struct huffman_code_compressed_t *)malloc(
@@ -736,25 +851,96 @@ int compress_huffman_code(struct huffman_code_t huffman_code) {
   return huffman_compressed->code[0];
 }
 
+
+/*******************************************************************************
+set_bit
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void set_bit(int A[], int k) {
   A[k / 32] |= 1 << (k % 32); /* Set the bit at the k-th position in A[i] */
 }
 
+
+/*******************************************************************************
+clear_bit
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void clear_bit(int A[], int k) { A[k / 32] &= ~(1 << (k % 32)); }
 
+
+/*******************************************************************************
+encode_file
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void encode_file(struct huffman_code_t huffman_codes[], FILE *fp) {}
 
+
+/*******************************************************************************
+test_bit
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 int test_bit(int A[], int k) { return ((A[k / 32] & (1 << (k % 32))) != 0); }
 
+
+/*******************************************************************************
+compare_bits
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 int compare_bits(int a[], int b[], int i) {
   return ((a[i / 32] & (1 << (i % 32))) != 0) ==
          ((b[i / 32] & (1 << (i % 32))) != 0);
 }
 
+
+/*******************************************************************************
+compare_bits_at_pos
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 int compare_bits_at_pos(int a[], int b[], int i, int j) {
   return ((a[i / 32] & (1 << (i % 32))) != 0) ==
          ((b[j / 32] & (1 << (j % 32))) != 0);
 }
+
+
+/*******************************************************************************
+print_bits
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void print_bits(int num) {
   int num_bits = sizeof(int) * 8;
   int i;
@@ -764,6 +950,15 @@ void print_bits(int num) {
   }
 }
 
+/*******************************************************************************
+print_n_bits
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void print_n_bits(int num[], int n, int offset, int marker) {
   if (marker == 0) {
     marker = -1;
@@ -786,6 +981,16 @@ void print_n_bits(int num[], int n, int offset, int marker) {
   printf("\n");
 }
 
+
+/*******************************************************************************
+print_compressed_data
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void print_compressed_data(FILE *fp, int data_offset, int data_end) {
   int buffer[1];
   int bits_printed = 0;

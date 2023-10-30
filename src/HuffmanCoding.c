@@ -1,3 +1,13 @@
+/*******************************************************************************
+Author: Aden Northcote, Emery Strasser, Jonathon Ngo and Jordan Stevens
+Date: 05/11/2023
+Purpose: This program compresses any file using Huffman Encoding with high entropy.
+*******************************************************************************/
+
+
+/*******************************************************************************
+Include header files and function prototypes
+*******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -40,16 +50,35 @@ struct min_heap_t *createMinH(unsigned capacity) {
   return min_heap_t;
 }
 
+void min_heapify(struct min_heap_t *min_heap_t, int idx);
+int check_size_one(struct min_heap_t *min_heap_t);
+void insertmin_heap_t(struct min_heap_t *min_heap_t,
+                      struct min_huffman_node_t *min_heap_tNode);
+void buildmin_heap_t(struct min_heap_t *min_heap_t);
+struct min_heap_t *createAndBuildmin_heap_t(char item[], int freq[], int size);
+int is_leaf(struct min_huffman_node_t *root);
+struct min_heap_t *createAndBuildmin_heap_t(char item[], int freq[], int size);
+struct min_huffman_node_t *buildHuffmanTree(char item[], int freq[], int size);
+void print_h_codes(struct min_huffman_node_t *root, int arr[], int top);
 void get_codes(struct min_huffman_node_t *root,
                struct huffman_code_t huffman_codes[], int arr[], int top,
                int n_items);
-
 void swap_node(struct min_huffman_node_t **a, struct min_huffman_node_t **b) {
   struct min_huffman_node_t *t = *a;
   *a = *b;
   *b = t;
 }
 
+
+/*******************************************************************************
+min_heapify
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void min_heapify(struct min_heap_t *min_heap_t, int idx) {
   int smallest = idx;
   int left = 2 * idx + 1;
@@ -69,6 +98,16 @@ void min_heapify(struct min_heap_t *min_heap_t, int idx) {
   }
 }
 
+
+/*******************************************************************************
+check_size_one
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 int check_size_one(struct min_heap_t *min_heap_t) {
   return (min_heap_t->size == 1);
 }
@@ -83,6 +122,16 @@ struct min_huffman_node_t *extract_min(struct min_heap_t *min_heap_t) {
   return temp;
 }
 
+
+/*******************************************************************************
+insertmin_heap_t
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void insertmin_heap_t(struct min_heap_t *min_heap_t,
                       struct min_huffman_node_t *min_heap_tNode) {
   ++min_heap_t->size;
@@ -95,6 +144,16 @@ void insertmin_heap_t(struct min_heap_t *min_heap_t,
   min_heap_t->array[i] = min_heap_tNode;
 }
 
+
+/*******************************************************************************
+buildmin_heap_t
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void buildmin_heap_t(struct min_heap_t *min_heap_t) {
   int n = min_heap_t->size - 1;
   int i;
@@ -103,10 +162,29 @@ void buildmin_heap_t(struct min_heap_t *min_heap_t) {
     min_heapify(min_heap_t, i);
 }
 
+/*******************************************************************************
+is_leaf
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 int is_leaf(struct min_huffman_node_t *root) {
   return !(root->left) && !(root->right);
 }
 
+
+/*******************************************************************************
+*createAndBuildmin_heap_t
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 struct min_heap_t *createAndBuildmin_heap_t(char item[], int freq[], int size) {
   struct min_heap_t *min_heap_t = createMinH(size);
   int i;
@@ -119,6 +197,16 @@ struct min_heap_t *createAndBuildmin_heap_t(char item[], int freq[], int size) {
   return min_heap_t;
 }
 
+
+/*******************************************************************************
+*buildHuffmanTree
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 struct min_huffman_node_t *buildHuffmanTree(char item[], int freq[], int size) {
   struct min_huffman_node_t *left, *right, *top;
   struct min_heap_t *min_heap_t = createAndBuildmin_heap_t(item, freq, size);
@@ -137,6 +225,16 @@ struct min_huffman_node_t *buildHuffmanTree(char item[], int freq[], int size) {
   return extract_min(min_heap_t);
 }
 
+
+/*******************************************************************************
+print_h_codes
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void print_h_codes(struct min_huffman_node_t *root, int arr[], int top) {
   if (root->left) {
     arr[top] = 0;
@@ -152,6 +250,16 @@ void print_h_codes(struct min_huffman_node_t *root, int arr[], int top) {
   }
 }
 
+
+/*******************************************************************************
+get_huffman_codes
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void get_huffman_codes(struct huffman_code_t huffman_codes[], char item[],
                        int freq[], int size) {
   struct min_huffman_node_t *root = buildHuffmanTree(item, freq, size);
@@ -165,6 +273,15 @@ void get_huffman_codes(struct huffman_code_t huffman_codes[], char item[],
   get_codes(root, huffman_codes, arr, top, size);
 }
 
+/*******************************************************************************
+get_codes
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void get_codes(struct min_huffman_node_t *root,
                struct huffman_code_t huffman_codes[], int arr[], int top,
                int n_items) {
@@ -191,6 +308,16 @@ void get_codes(struct min_huffman_node_t *root,
   }
 }
 
+
+/*******************************************************************************
+sort_codes
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void sort_codes(struct huffman_code_t huffman_codes[], int size) {
   int sorted = 0;
 
@@ -208,6 +335,15 @@ void sort_codes(struct huffman_code_t huffman_codes[], int size) {
   }
 }
 
+/*******************************************************************************
+print_array
+This function prints the initial menu with all instructions on how to use this
+program.
+inputs:
+- none
+outputs:
+- none
+*******************************************************************************/
 void print_array(int arr[], int n) {
   int i;
   for (i = 0; i < n; ++i)
