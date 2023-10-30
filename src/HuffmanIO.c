@@ -102,12 +102,13 @@ void print_header(struct huffman_header_t header) {
 
 /*******************************************************************************
 compress_input_file
-This function prints the initial menu with all instructions on how to use this
-program.
+This function runs one of the main tasks of compressing a given file through the use of Huffman encoding.
 inputs:
-- none
+- input file pointer
+- Output file name
+- Verbose
 outputs:
-- none
+- Encrypted and compressed file
 *******************************************************************************/
 void compress_input_file(FILE *fp, char output_file_name[], int verbose) {
 
@@ -643,10 +644,12 @@ void decompress_file(FILE *fp, char output_file_name[], int verbose) {
 
 /*******************************************************************************
 get_key_offsets
-This function prints the initial menu with all instructions on how to use this
-program.
+This function calculates the location of the key in the output file and returns it to the header
 inputs:
-- none
+- offsets
+- keys
+- number of elements
+- verbose
 outputs:
 - none
 *******************************************************************************/
@@ -671,24 +674,26 @@ void get_key_offsets(int offsets[], struct huffman_key_t keys[], int n_elements,
 
 /*******************************************************************************
 bits_to_bytes
-This function prints the initial menu with all instructions on how to use this
-program.
+This function converts the number of bits to bytes.
 inputs:
-- none
+- number of bits
 outputs:
-- none
+- number of bytes
 *******************************************************************************/
 int bits_to_bytes(int n_bits) { return n_bits / 8 + 1; }
 
 
 /*******************************************************************************
 load_to_buffer
-This function prints the initial menu with all instructions on how to use this
-program.
+This function loads the file to the buffer to prepare for reading.
 inputs:
-- none
+- buffer
+- input file
+- size in bytes
+- counter
+- offset of bytes
 outputs:
-- none
+- number of bytes read to buffer
 *******************************************************************************/
 int load_to_buffer(int buffer[], FILE *fp, int size_bytes, int count,
                    long int offset_bytes) {
@@ -703,12 +708,14 @@ int load_to_buffer(int buffer[], FILE *fp, int size_bytes, int count,
 
 /*******************************************************************************
 print_keys_with_offsets
-This function prints the initial menu with all instructions on how to use this
-program.
+This function prints the keys of each character and then outlines the offset of
+the same for the purpose of debugging.
 inputs:
-- none
+- keys
+- offsets
+- n
 outputs:
-- none
+- 
 *******************************************************************************/
 void print_keys_with_offsets(struct huffman_key_t keys[], int offsets[],
                              int n) {
@@ -726,10 +733,13 @@ void print_keys_with_offsets(struct huffman_key_t keys[], int offsets[],
 
 /*******************************************************************************
 load_keys
-This function prints the initial menu with all instructions on how to use this
-program.
+This function loads the keys of an image to be decompressed.
 inputs:
-- none
+- keys
+- filename 
+- offset
+- number of symbols
+- verbose
 outputs:
 - none
 *******************************************************************************/
@@ -747,12 +757,16 @@ void load_keys(struct huffman_key_t keys[], FILE *fp, int offset, int n_symbols,
     printf("Loaded keys...\n");
   }
 }
+
+
 /*******************************************************************************
 load_header
-This function prints the initial menu with all instructions on how to use this
-program.
+This function loads the attached file header of a huffman encoded file to be
+decompressed.
 inputs:
-- none
+- header
+- file
+-verbose
 outputs:
 - none
 *******************************************************************************/
@@ -793,12 +807,14 @@ int load_header(struct huffman_header_t *header_p, FILE *fp, int verbose) {
 
 /*******************************************************************************
 compare_n_bits
-This function prints the initial menu with all instructions on how to use this
-program.
+This function compares a number of bits to determine if they are the same
 inputs:
-- none
+- bits
+- offsets of associated bits
+- number of bits
 outputs:
-- none
+- 0 if true
+- 1 if false
 *******************************************************************************/
 int compare_n_bits(int a[], int b[], int len, int offset_a, int offset_b) {
   int i;
@@ -813,10 +829,10 @@ int compare_n_bits(int a[], int b[], int len, int offset_a, int offset_b) {
 
 /*******************************************************************************
 clear_int_array
-This function prints the initial menu with all instructions on how to use this
-program.
+This function clears the integer array and resets each position to 0
 inputs:
-- none
+- integer array
+- length of array
 outputs:
 - none
 *******************************************************************************/
@@ -830,12 +846,11 @@ void clear_int_array(int a[], int len) {
 
 /*******************************************************************************
 compress_huffman_code
-This function prints the initial menu with all instructions on how to use this
-program.
+This function compresses chars of 0s and 1s into a bit array
 inputs:
-- none
+- huffman_code_t
 outputs:
-- none
+- huffman compressed code bit array
 *******************************************************************************/
 int compress_huffman_code(struct huffman_code_t huffman_code) {
   struct huffman_code_compressed_t *huffman_compressed =
@@ -854,24 +869,24 @@ int compress_huffman_code(struct huffman_code_t huffman_code) {
 
 /*******************************************************************************
 set_bit
-This function prints the initial menu with all instructions on how to use this
-program.
+This function sets the bit at the k-th position in A[i]
 inputs:
-- none
+- Array A
+- Position K
 outputs:
 - none
 *******************************************************************************/
 void set_bit(int A[], int k) {
-  A[k / 32] |= 1 << (k % 32); /* Set the bit at the k-th position in A[i] */
+  A[k / 32] |= 1 << (k % 32); 
 }
 
 
 /*******************************************************************************
 clear_bit
-This function prints the initial menu with all instructions on how to use this
-program.
+This function clears the bit at the k-th position in A[i]
 inputs:
-- none
+- Array A
+- Position K
 outputs:
 - none
 *******************************************************************************/
@@ -879,23 +894,12 @@ void clear_bit(int A[], int k) { A[k / 32] &= ~(1 << (k % 32)); }
 
 
 /*******************************************************************************
-encode_file
-This function prints the initial menu with all instructions on how to use this
-program.
-inputs:
-- none
-outputs:
-- none
-*******************************************************************************/
-void encode_file(struct huffman_code_t huffman_codes[], FILE *fp) {}
-
-
-/*******************************************************************************
 test_bit
-This function prints the initial menu with all instructions on how to use this
-program.
+This function tests if the bit at the k-th position in A[i] is 
+correctly built and formatted.
 inputs:
-- none
+- Array A
+- Position K
 outputs:
 - none
 *******************************************************************************/
@@ -904,10 +908,9 @@ int test_bit(int A[], int k) { return ((A[k / 32] & (1 << (k % 32))) != 0); }
 
 /*******************************************************************************
 compare_bits
-This function prints the initial menu with all instructions on how to use this
-program.
+This function compares 2 bits to determine if they are equivalent.
 inputs:
-- none
+- bits
 outputs:
 - none
 *******************************************************************************/
@@ -919,10 +922,9 @@ int compare_bits(int a[], int b[], int i) {
 
 /*******************************************************************************
 compare_bits_at_pos
-This function prints the initial menu with all instructions on how to use this
-program.
+This function comparesx two adjacent bits to determine if they are equivalent.
 inputs:
-- none
+- bits
 outputs:
 - none
 *******************************************************************************/
@@ -934,10 +936,9 @@ int compare_bits_at_pos(int a[], int b[], int i, int j) {
 
 /*******************************************************************************
 print_bits
-This function prints the initial menu with all instructions on how to use this
-program.
+This function prints the bits in a given byte
 inputs:
-- none
+- a byte
 outputs:
 - none
 *******************************************************************************/
@@ -952,10 +953,12 @@ void print_bits(int num) {
 
 /*******************************************************************************
 print_n_bits
-This function prints the initial menu with all instructions on how to use this
-program.
+This function prints the number of bits in a given set of bytes
 inputs:
-- none
+- set of bytes
+- number of bytes
+- offset
+- delimiter
 outputs:
 - none
 *******************************************************************************/
@@ -984,10 +987,11 @@ void print_n_bits(int num[], int n, int offset, int marker) {
 
 /*******************************************************************************
 print_compressed_data
-This function prints the initial menu with all instructions on how to use this
-program.
+This function prints the compressed data process
 inputs:
-- none
+- file
+- data offset
+- end of data
 outputs:
 - none
 *******************************************************************************/
