@@ -138,12 +138,12 @@ void print_help() {
 
 /*******************************************************************************
 file_exists
-This function prints the initial menu with all instructions on how to use this
-program.
+This function checks whether the users given file exists
 inputs:
-- none
+- filename
 outputs:
-- none
+- 1 if exists
+- 0 if not found
 *******************************************************************************/
 int file_exists(char file_name[]) {
   FILE *fp;
@@ -158,10 +158,11 @@ int file_exists(char file_name[]) {
 
 /*******************************************************************************
 parse_cli_args
-This function prints the initial menu with all instructions on how to use this
-program.
+This function processes the flags given to the initial menu to determine what
+ operations the user wishes to complete
 inputs:
-- none
+- the argument char
+- array of arguments
 outputs:
 - none
 *******************************************************************************/

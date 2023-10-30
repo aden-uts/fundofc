@@ -1,3 +1,13 @@
+/*******************************************************************************
+Author: Aden Northcote, Emery Strasser, Jonathon Ngo and Jordan Stevens
+Date: 05/11/2023
+Purpose: This program compresses any file using Huffman Encoding with high entropy.
+*******************************************************************************/
+
+
+/*******************************************************************************
+Include header files and function prototypes
+*******************************************************************************/
 #ifndef HUFFMANIO_H
 #define HUFFMANIO_H
 #include <stdio.h>
