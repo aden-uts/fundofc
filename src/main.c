@@ -1,7 +1,18 @@
 /*******************************************************************************
-Author: Aden Northcote, Emery Strasser, Jonathon Ngo and Jordan Stevens
+Author: Aden Northcote, Emery Strasser, Jonathon Tjoe and Jordan Stevens
+Group number: 16 
 Date: 05/11/2023
 Purpose: This program compresses any file using Huffman Encoding with high entropy.
+Instructions:
+1. cd fundofc-main
+2. make
+3. for help type "./huff -h"
+4. to compress "./huff -c asd.bmp test.huff"
+   if inside a file "./huff -c tests/asd.bmp test.huff"
+5. to decompress text file "./huff -d test.huff text.txt" 
+   for Image "./huff -d test.huff text.bmp"
+6. with verbose "./huff -c -v 1 tests/asd.bmp test.huff"
+                "./huff -c -v 2 tests/asd.bmp test.huff"
 *******************************************************************************/
 
 
